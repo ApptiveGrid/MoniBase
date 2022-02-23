@@ -64,6 +64,12 @@ ODBLockRegistry >> locks [
 	^ locks
 ]
 
+{ #category : #'as yet unclassified' }
+ODBLockRegistry >> locksWithTransaction: aTransaction [ 
+	^ locks values 
+		select: [ :lock | lock transaction = aTransaction ]
+]
+
 { #category : #accessing }
 ODBLockRegistry >> path: aFileReference [ 
 	path := aFileReference 

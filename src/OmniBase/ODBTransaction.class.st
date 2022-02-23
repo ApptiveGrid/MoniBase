@@ -47,7 +47,7 @@ ODBTransaction >> basicAbort [
 								transaction: self;
 								rollback.
 							transactionFile recovery: nil].
-					lockRegistry locks do: 
+					(lockRegistry locksWithTransaction: self) do: 
 							[:each | 
 							each
 								transaction: self;
