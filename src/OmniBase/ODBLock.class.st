@@ -54,6 +54,11 @@ ODBLock >> objectID: anObjectID [
     objectID := anObjectID
 ]
 
+{ #category : #accessing }
+ODBLock >> transaction [
+	^ transaction
+]
+
 { #category : #'public/accessing' }
 ODBLock >> transaction: aTransaction [
 

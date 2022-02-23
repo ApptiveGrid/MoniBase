@@ -36,6 +36,11 @@ ODBLockRegistry class >> registries [
 	^ registries 
 ]
 
+{ #category : #initialization }
+ODBLockRegistry class >> reset [ 
+	registries := Dictionary new
+]
+
 { #category : #adding }
 ODBLockRegistry >> addLock: anODBObjectLock [ 
 	locks 

@@ -151,7 +151,7 @@ ODBLocalTransaction >> lockID [
 	if database is globally locked by another user and no 
 	locks can currently be set."
 
-	lockRegistry isEmpty 
+	(lockRegistry locksWithTransaction: self) isEmpty 
 		ifTrue: 
 			[(transactionFile := client newTransactionFileFor: self) isNil ifTrue: [^nil] ].
 	^transactionFile transactionID
