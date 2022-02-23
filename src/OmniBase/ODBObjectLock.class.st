@@ -26,6 +26,11 @@ ODBObjectLock >> storeOnStream: aStream [
         aStream putLong: lockID
 ]
 
+{ #category : #accessing }
+ODBObjectLock >> transaction [
+	^ transaction 
+]
+
 { #category : #'public/unclassified' }
 ODBObjectLock >> unlock [
 

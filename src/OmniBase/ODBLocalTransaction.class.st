@@ -13,14 +13,15 @@ Class {
 { #category : #private }
 ODBLocalTransaction >> addLock: aLock [
         "Private - Add aLock to receiver."
-
-    lockRegistry addLock: aLock
+	aLock transaction: self.
+   lockRegistry addLock: aLock
 ]
 
 { #category : #private }
 ODBLocalTransaction >> addLoggedLock: aLock [ 
 	"Private - Add aLock to receiver and store it to transaction file."
 
+	aLock transaction: self.
 	lockRegistry addLock: aLock.
 	transactionFile lockAdd: aLock
 ]
