@@ -36,6 +36,18 @@ ODBLockRegistry class >> registries [
 	^ registries 
 ]
 
+{ #category : #'as yet unclassified' }
+ODBLockRegistry class >> remove: aRegistry [ 
+	^ registries removeKey: aRegistry path 
+	
+]
+
+{ #category : #'as yet unclassified' }
+ODBLockRegistry class >> removePath: aString [ 
+	^ registries removeKey: aString 
+	
+]
+
 { #category : #initialization }
 ODBLockRegistry class >> reset [ 
 	registries := Dictionary new
@@ -46,6 +58,12 @@ ODBLockRegistry >> addLock: anODBObjectLock [
 	locks 
 		at: anODBObjectLock objectID 
 		put: anODBObjectLock 
+]
+
+{ #category : #'as yet unclassified' }
+ODBLockRegistry >> checkRemoval [
+	locks isEmpty ifTrue: [ 
+		self remove ]
 ]
 
 { #category : #testing }
@@ -76,20 +94,27 @@ ODBLockRegistry >> locksWithTransaction: aTransaction [
 ]
 
 { #category : #accessing }
+ODBLockRegistry >> path [
+
+	^ path
+]
+
+{ #category : #accessing }
 ODBLockRegistry >> path: aFileReference [ 
 	path := aFileReference 
 ]
 
 { #category : #removing }
 ODBLockRegistry >> remove [
-	
+	self class remove: self
 ]
 
 { #category : #removing }
 ODBLockRegistry >> removeLock: anODBObjectLock [ 
 	locks 
 		removeKey: anODBObjectLock objectID 
-		ifAbsent: [  ]
+		ifAbsent: [  ].
+	self checkRemoval 
 ]
 
 { #category : #initialization }

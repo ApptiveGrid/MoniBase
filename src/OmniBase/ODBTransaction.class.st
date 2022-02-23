@@ -5,7 +5,6 @@ Class {
 		'cacheMutex',
 		'client',
 		'dbConnection',
-		'locks',
 		'objectIndex',
 		'objects',
 		'transactionFile',
@@ -36,23 +35,24 @@ ODBTransaction >> abort [
 ODBTransaction >> basicAbort [
 	"Private - Abort transaction. After aborting it, it can not be used anymore."
 
-	| changes |
+	| changes locks |
 	dbConnection isNil 
 		ifFalse: 
-			[lockRegistry isEmpty 
-				ifFalse: 
-					[(changes := transactionFile recovery) isNil 
-						ifFalse: 
-							[changes
-								transaction: self;
-								rollback.
-							transactionFile recovery: nil].
-					(lockRegistry locksWithTransaction: self) do: 
-							[:each | 
-							each
-								transaction: self;
-								unlock.
-							lockRegistry removeLock: each]].
+			[	locks := lockRegistry locksWithTransaction: self.
+				locks isEmpty 
+					ifFalse: 
+						[(changes := transactionFile recovery) isNil 
+							ifFalse: 
+								[changes
+									transaction: self;
+									rollback.
+								transactionFile recovery: nil].
+						locks do: 
+								[:each | 
+								each
+									transaction: self;
+									unlock.
+								lockRegistry removeLock: each]].
 			transactionManager transactionAborted: self.
 			client transactionRemove: self].
 	objects := nil.
