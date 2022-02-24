@@ -67,8 +67,21 @@ ODBLockRegistry >> checkRemoval [
 ]
 
 { #category : #testing }
-ODBLockRegistry >> hasLockFor: anODBObjectID [ 
-	^ locks includesKey: anODBObjectID 
+ODBLockRegistry >> hasForeignLockFor: anODBObjectID transaction: aTransaction [
+	"test if there is a lock that is present and that belongs to aTransaction"
+	^ locks 
+		at: anODBObjectID 
+		ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
+		ifAbsent: [ false ]
+]
+
+{ #category : #testing }
+ODBLockRegistry >> hasLockFor: anODBObjectID transaction: aTransaction [
+	"test if there is a lock that is present and that belongs to aTransaction"
+	^ locks 
+		at: anODBObjectID 
+		ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
+		ifAbsent: [ false ]
 ]
 
 { #category : #initialization }

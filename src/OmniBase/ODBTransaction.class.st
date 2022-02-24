@@ -51,8 +51,7 @@ ODBTransaction >> basicAbort [
 								[:each | 
 								each
 									transaction: self;
-									unlock.
-								lockRegistry removeLock: each]].
+									unlock ]].
 			transactionManager transactionAborted: self.
 			client transactionRemove: self].
 	objects := nil.

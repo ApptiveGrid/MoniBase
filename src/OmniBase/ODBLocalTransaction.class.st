@@ -99,8 +99,13 @@ ODBLocalTransaction >> committed [
 ]
 
 { #category : #testing }
+ODBLocalTransaction >> hasForeignLockFor: anODBObjectID [ 
+	^ lockRegistry hasForeignLockFor: anODBObjectID transaction: self
+]
+
+{ #category : #testing }
 ODBLocalTransaction >> hasLockFor: anODBObjectID [ 
-	^ lockRegistry hasLockFor: anODBObjectID 
+	^ lockRegistry hasForeignLockFor: anODBObjectID transaction: self
 ]
 
 { #category : #initialization }
