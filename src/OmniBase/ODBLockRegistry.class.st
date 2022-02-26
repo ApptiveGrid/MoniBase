@@ -24,7 +24,7 @@ ODBLockRegistry class >> forPath: aString [
 
 { #category : #initialization }
 ODBLockRegistry class >> initialize [ 
-	registries := WeakValueDictionary new
+	self reset
 ]
 
 { #category : #'as yet unclassified' }
