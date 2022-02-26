@@ -55,20 +55,10 @@ ODBLockRegistry class >> reset [
 ]
 
 { #category : #adding }
-ODBLockRegistry >> addLock: anODBObjectLock [ 
-	| key lock |
-	key := anODBObjectLock registryKey.
-	lock := locks 
-		at: key
-		ifPresent: [ :l |
-			(l transaction = anODBObjectLock transaction) 
-				ifFalse: [ ^ false ].
-			(l objectID = anODBObjectLock objectID) 
-			ifTrue: [ ^ true ] ].
-	locks 
-		at: key 
-		put: anODBObjectLock.
-	^ true
+ODBLockRegistry >> addLock: aKeyLock [ 
+	^ self 
+		lockAt: aKeyLock lockRegistryKey 
+		put: aKeyLock 
 ]
 
 { #category : #'as yet unclassified' }
@@ -78,12 +68,17 @@ ODBLockRegistry >> checkRemoval [
 ]
 
 { #category : #testing }
-ODBLockRegistry >> hasForeignLockFor: anODBObjectID transaction: aTransaction [
+ODBLockRegistry >> hasForeignLockFor: aTransactionObject transaction: aTransaction [
 	"test if there is a lock that is present and that belongs to aTransaction"
 	^ locks 
-		at: anODBObjectID registryKey
+		at: aTransactionObject lockRegistryKey 
 		ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
 		ifAbsent: [ false ]
+]
+
+{ #category : #testing }
+ODBLockRegistry >> hasKeyLockOn: aBtreeDictionary key: key [ 
+	^ locks includesKey: (aBtreeDictionary lockRegistryKeyAt: key)
 ]
 
 { #category : #initialization }
@@ -97,9 +92,23 @@ ODBLockRegistry >> isEmpty [
 	^ locks isEmpty
 ]
 
-{ #category : #accessing }
-ODBLockRegistry >> locks [
-	^ locks
+{ #category : #testing }
+ODBLockRegistry >> keyLockOn: aBtreeDictionary key: key ifAbsent: aBlock [
+	^ locks 
+		at: (aBtreeDictionary lockRegistryKeyAt: key) 
+		ifAbsent: aBlock
+]
+
+{ #category : #adding }
+ODBLockRegistry >> lockAt: key put: aLock [ 
+	locks 
+		at: key
+		ifPresent: [ :lock |
+			^ lock isSameTransaction: aLock transaction ].
+	locks 
+		at: key 
+		put: aLock.
+	^ true
 ]
 
 { #category : #'as yet unclassified' }
@@ -127,7 +136,7 @@ ODBLockRegistry >> remove [
 { #category : #removing }
 ODBLockRegistry >> removeLock: anODBObjectLock [ 
 	locks 
-		removeKey: anODBObjectLock registryKey 
+		removeKey: anODBObjectLock lockRegistryKey 
 		ifAbsent: [  ].
 	self checkRemoval 
 ]

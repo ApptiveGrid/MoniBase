@@ -18,6 +18,11 @@ ODBLock class >> lockClassID [
 	self subclassResponsibility
 ]
 
+{ #category : #testing }
+ODBLock >> isSameTransaction: anODBLocalTransaction [ 
+	^ transaction = anODBLocalTransaction 
+]
+
 { #category : #'public/accessing' }
 ODBLock >> lockID [
 
@@ -42,6 +47,11 @@ ODBLock >> lockIndex: anInteger [
     lockIndex := anInteger.
 ]
 
+{ #category : #'as yet unclassified' }
+ODBLock >> lockRegistryKey [ 
+	^ objectID lockRegistryKey 
+]
+
 { #category : #'public/accessing' }
 ODBLock >> objectID [
 
@@ -52,12 +62,6 @@ ODBLock >> objectID [
 ODBLock >> objectID: anObjectID [
 
     objectID := anObjectID
-]
-
-{ #category : #'as yet unclassified' }
-ODBLock >> registryKey [ 
-	^ String streamContents: [ :stream |
-		self registryKeyOn: stream ]
 ]
 
 { #category : #accessing }

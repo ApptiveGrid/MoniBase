@@ -11,19 +11,19 @@ Class {
 }
 
 { #category : #private }
-ODBLocalTransaction >> addLock: aLock [
+ODBLocalTransaction >> addLock: anObjectLock [
         "Private - Add aLock to receiver."
-	aLock transaction: self.
-   ^ lockRegistry addLock: aLock
+	anObjectLock transaction: self.
+   ^ lockRegistry addLock: anObjectLock
 ]
 
 { #category : #private }
-ODBLocalTransaction >> addLoggedLock: aLock [ 
+ODBLocalTransaction >> addLoggedLock: aKeyLock [ 
 	"Private - Add aLock to receiver and store it to transaction file."
 
-	aLock transaction: self.
-	(lockRegistry addLock: aLock) ifFalse: [ ^ false ]. 
-	transactionFile lockAdd: aLock.
+	aKeyLock transaction: self.
+	(lockRegistry addLock: aKeyLock) ifFalse: [ ^ false ]. 
+	transactionFile lockAdd: aKeyLock.
 	^ true
 	
 ]
@@ -101,8 +101,16 @@ ODBLocalTransaction >> committed [
 ]
 
 { #category : #testing }
-ODBLocalTransaction >> hasForeignLockFor: anODBObjectID [ 
-	^ lockRegistry hasForeignLockFor: anODBObjectID transaction: self
+ODBLocalTransaction >> hasForeignLockFor: aTransactionObject [
+	^ lockRegistry hasForeignLockFor: aTransactionObject transaction: self
+]
+
+{ #category : #testing }
+ODBLocalTransaction >> hasKeyLockOn: aBtreeDictionary key: aCollection [ 
+	^ lockRegistry 
+		hasKeyLockOn: aBtreeDictionary 
+		key: aCollection 
+
 ]
 
 { #category : #initialization }
@@ -134,6 +142,14 @@ ODBLocalTransaction >> isPersistent: anObject [
 	
 	^ (self getTransactionObject: anObject ifAbsent:[nil]) notNil
 	
+]
+
+{ #category : #testing }
+ODBLocalTransaction >> keyLockOn: aBtreeDictionary key: key ifAbsent: aBlock [
+	^ lockRegistry 
+		keyLockOn: aBtreeDictionary 
+		key: key 
+		ifAbsent: aBlock
 ]
 
 { #category : #public }

@@ -105,6 +105,29 @@ ODBObjectID >> loadFromStream: aStream [
     self fromBytes: bytes at: 1
 ]
 
+{ #category : #'as yet unclassified' }
+ODBObjectID >> lockRegistryKey [
+	^ String streamContents: [ :stream |
+		self lockRegistryKeyOn: stream ]
+]
+
+{ #category : #'as yet unclassified' }
+ODBObjectID >> lockRegistryKeyAt: aKey [
+	^ String streamContents: [ :stream |
+		self lockRegistryKeyOn: stream.
+		stream 
+			<< ':'
+			<< aKey asInteger asString ]
+]
+
+{ #category : #'as yet unclassified' }
+ODBObjectID >> lockRegistryKeyOn: aStream [
+	aStream 
+		<< containerID asString 
+		<< ':'
+		<< index asString
+]
+
 { #category : #public }
 ODBObjectID >> printOn: aStream [ 
 	super printOn: aStream.
@@ -121,11 +144,6 @@ ODBObjectID >> putBytesTo: bytes at: pos [
 	bytes
 		odbLongAt: pos put: index;
 		at: pos + 3 put: containerID
-]
-
-{ #category : #'as yet unclassified' }
-ODBObjectID >> registryKey [
-	^ containerID asString , ':', index asString
 ]
 
 { #category : #'public/load/store' }

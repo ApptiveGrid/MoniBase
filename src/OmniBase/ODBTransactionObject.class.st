@@ -41,7 +41,7 @@ ODBTransactionObject >> lock [
 	lockObject isNil 
 		ifTrue: 
 			[
-			(transaction hasForeignLockFor: holder objectID) ifTrue: [ ^ false ].
+			(transaction hasForeignLockFor: self) ifTrue: [ ^ false ].
 			(lockID := transaction lockID) isNil ifTrue: [^false].
 			transaction isGlobalLocked ifTrue: [^true].
 			lockObj := ODBObjectLock new.
@@ -55,6 +55,11 @@ ODBTransactionObject >> lock [
 					^false].
 			lockObject := lockObj].
 	^true
+]
+
+{ #category : #'as yet unclassified' }
+ODBTransactionObject >> lockRegistryKey [
+	^ self objectID lockRegistryKey 
 ]
 
 { #category : #public }

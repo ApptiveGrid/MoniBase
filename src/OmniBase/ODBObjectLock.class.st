@@ -19,11 +19,6 @@ ODBObjectLock >> loadFromStream: aStream [
     lockID := aStream getLong
 ]
 
-{ #category : #'as yet unclassified' }
-ODBObjectLock >> registryKeyOn: aStream [ 
-	aStream << objectID registryKey 
-]
-
 { #category : #'public/load/store' }
 ODBObjectLock >> storeOnStream: aStream [
 

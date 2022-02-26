@@ -52,7 +52,7 @@ ODBTransaction >> basicAbort [
 								each
 									transaction: self;
 									unlock.
-								lockRegistry removeLock: each ]].
+								lockRegistry removeLock: each]].
 			transactionManager transactionAborted: self.
 			client transactionRemove: self].
 	objects := nil.
@@ -235,6 +235,11 @@ ODBTransaction >> isReadOnly [
 		"Answer <true> if this is a read-only transaction."
 
 	^false
+]
+
+{ #category : #accessing }
+ODBTransaction >> locks [
+	^ lockRegistry locksWithTransaction: self
 ]
 
 { #category : #public }
