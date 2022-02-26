@@ -14,7 +14,7 @@ Class {
 ODBLocalTransaction >> addLock: aLock [
         "Private - Add aLock to receiver."
 	aLock transaction: self.
-   lockRegistry addLock: aLock
+   ^ lockRegistry addLock: aLock
 ]
 
 { #category : #private }
@@ -22,8 +22,10 @@ ODBLocalTransaction >> addLoggedLock: aLock [
 	"Private - Add aLock to receiver and store it to transaction file."
 
 	aLock transaction: self.
-	lockRegistry addLock: aLock.
-	transactionFile lockAdd: aLock
+	(lockRegistry addLock: aLock) ifFalse: [ ^ false ]. 
+	transactionFile lockAdd: aLock.
+	^ true
+	
 ]
 
 { #category : #public }
@@ -100,11 +102,6 @@ ODBLocalTransaction >> committed [
 
 { #category : #testing }
 ODBLocalTransaction >> hasForeignLockFor: anODBObjectID [ 
-	^ lockRegistry hasForeignLockFor: anODBObjectID transaction: self
-]
-
-{ #category : #testing }
-ODBLocalTransaction >> hasLockFor: anODBObjectID [ 
 	^ lockRegistry hasForeignLockFor: anODBObjectID transaction: self
 ]
 

@@ -35,6 +35,16 @@ ODBKeyLock >> loadFromStream: aStream [
     key := aStream getString asByteArray
 ]
 
+{ #category : #'as yet unclassified' }
+ODBKeyLock >> registryKeyOn: aStream [ 
+	aStream 
+		<< objectID containerID asString 
+		<< ':' 
+		<< objectID index asString
+		<< ':'
+		<< key asInteger asString
+]
+
 { #category : #'public/load/store' }
 ODBKeyLock >> storeOnStream: aStream [
 

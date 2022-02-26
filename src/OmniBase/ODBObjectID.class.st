@@ -123,6 +123,11 @@ ODBObjectID >> putBytesTo: bytes at: pos [
 		at: pos + 3 put: containerID
 ]
 
+{ #category : #'as yet unclassified' }
+ODBObjectID >> registryKey [
+	^ containerID asString , ':', index asString
+]
+
 { #category : #'public/load/store' }
 ODBObjectID >> storeOnStream: aStream [
 

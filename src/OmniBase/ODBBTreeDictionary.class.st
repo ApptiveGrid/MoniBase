@@ -69,7 +69,8 @@ ODBBTreeDictionary >> basicLockKey: key [
 				key: key.
 	value := self valueAt: key.
 	dataBaseObject iterator critical: 
-			[transaction addLoggedLock: lock.
+			[
+			(transaction addLoggedLock: lock) ifFalse: [ ^ false ].
 			((dataBaseObject iterator)
 				goTo: key;
 				lockCurrentValue: value contents with: lockID) 

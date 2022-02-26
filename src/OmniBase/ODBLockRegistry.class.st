@@ -38,8 +38,9 @@ ODBLockRegistry class >> registries [
 
 { #category : #'as yet unclassified' }
 ODBLockRegistry class >> remove: aRegistry [ 
-	^ registries removeKey: aRegistry path 
-	
+	^ registries 
+		removeKey: aRegistry path 
+		ifAbsent: [ ] 
 ]
 
 { #category : #'as yet unclassified' }
@@ -55,9 +56,19 @@ ODBLockRegistry class >> reset [
 
 { #category : #adding }
 ODBLockRegistry >> addLock: anODBObjectLock [ 
+	| key lock |
+	key := anODBObjectLock registryKey.
+	lock := locks 
+		at: key
+		ifPresent: [ :l |
+			(l transaction = anODBObjectLock transaction) 
+				ifFalse: [ ^ false ].
+			(l objectID = anODBObjectLock objectID) 
+			ifTrue: [ ^ true ] ].
 	locks 
-		at: anODBObjectLock objectID 
-		put: anODBObjectLock 
+		at: key 
+		put: anODBObjectLock.
+	^ true
 ]
 
 { #category : #'as yet unclassified' }
@@ -70,16 +81,7 @@ ODBLockRegistry >> checkRemoval [
 ODBLockRegistry >> hasForeignLockFor: anODBObjectID transaction: aTransaction [
 	"test if there is a lock that is present and that belongs to aTransaction"
 	^ locks 
-		at: anODBObjectID 
-		ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
-		ifAbsent: [ false ]
-]
-
-{ #category : #testing }
-ODBLockRegistry >> hasLockFor: anODBObjectID transaction: aTransaction [
-	"test if there is a lock that is present and that belongs to aTransaction"
-	^ locks 
-		at: anODBObjectID 
+		at: anODBObjectID registryKey
 		ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
 		ifAbsent: [ false ]
 ]
@@ -125,7 +127,7 @@ ODBLockRegistry >> remove [
 { #category : #removing }
 ODBLockRegistry >> removeLock: anODBObjectLock [ 
 	locks 
-		removeKey: anODBObjectLock objectID 
+		removeKey: anODBObjectLock registryKey 
 		ifAbsent: [  ].
 	self checkRemoval 
 ]

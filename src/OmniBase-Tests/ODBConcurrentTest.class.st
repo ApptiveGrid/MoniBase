@@ -34,6 +34,7 @@ ODBConcurrentTest >> testBTreeKeyLocking [
 
 	t1 commit.
 	t2 commit.
+
 	t1 := db newTransaction.
 	t2 := db2 newTransaction.
 	dict := t1 root at: 'concurrent-btree'.

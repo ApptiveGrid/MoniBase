@@ -54,6 +54,12 @@ ODBLock >> objectID: anObjectID [
     objectID := anObjectID
 ]
 
+{ #category : #'as yet unclassified' }
+ODBLock >> registryKey [ 
+	^ String streamContents: [ :stream |
+		self registryKeyOn: stream ]
+]
+
 { #category : #accessing }
 ODBLock >> transaction [
 	^ transaction
