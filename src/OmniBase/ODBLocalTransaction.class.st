@@ -113,6 +113,11 @@ ODBLocalTransaction >> hasKeyLockOn: aBtreeDictionary key: aCollection [
 
 ]
 
+{ #category : #testing }
+ODBLocalTransaction >> hasLocks [ 	
+	^ self locks notEmpty
+]
+
 { #category : #initialization }
 ODBLocalTransaction >> initialize [
 
@@ -169,8 +174,8 @@ ODBLocalTransaction >> lockID [
 	if database is globally locked by another user and no 
 	locks can currently be set."
 
-	(lockRegistry locksWithTransaction: self) isEmpty 
-		ifTrue: 
+	self hasLocks 
+		ifFalse: 
 			[(transactionFile := client newTransactionFileFor: self) isNil ifTrue: [^nil] ].
 	^transactionFile transactionID
 ]

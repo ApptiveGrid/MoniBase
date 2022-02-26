@@ -35,24 +35,21 @@ ODBTransaction >> abort [
 ODBTransaction >> basicAbort [
 	"Private - Abort transaction. After aborting it, it can not be used anymore."
 
-	| changes locks |
+	| changes |
 	dbConnection isNil 
-		ifFalse: 
-			[	locks := lockRegistry locksWithTransaction: self.
-				locks isEmpty 
-					ifFalse: 
-						[(changes := transactionFile recovery) isNil 
-							ifFalse: 
-								[changes
-									transaction: self;
-									rollback.
-								transactionFile recovery: nil].
-						locks do: 
-								[:each | 
-								each
-									transaction: self;
-									unlock.
-								lockRegistry removeLock: each]].
+		ifFalse: [	
+			self locks ifNotEmpty: [ :locks |
+				(changes := transactionFile recovery) isNil 
+						ifFalse: [
+							changes
+								transaction: self;
+								rollback.
+							transactionFile recovery: nil].
+					locks do: [:each | 
+						each
+							transaction: self;
+							unlock.
+						lockRegistry removeLock: each]].
 			transactionManager transactionAborted: self.
 			client transactionRemove: self].
 	objects := nil.

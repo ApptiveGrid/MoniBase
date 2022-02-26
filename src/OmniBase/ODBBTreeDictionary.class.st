@@ -252,7 +252,7 @@ ODBBTreeDictionary >> unlockKey: aKey [
 	dataBaseObject isNil ifTrue: [^true].
 	key := self bytesFromKey: aKey.
 	changed isNil ifFalse: [(changed includes: key) ifTrue: [^false]].
-	transaction locks ifEmpty: [ ^ transaction isGlobalLocked ].
+	transaction hasLocks ifFalse: [ ^ transaction isGlobalLocked ].
 	lock := transaction keyLockOn: self key: key ifAbsent: [ ^ false ]. 
 	(dataBaseObject unlockKey: key with: lock lockID) ifFalse: [^false].
 	transaction removeLoggedLock: lock.
