@@ -3,7 +3,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'path',
-		'locks'
+		'locks',
+		'mutex'
 	],
 	#classInstVars : [
 		'registries'
@@ -70,20 +71,23 @@ ODBLockRegistry >> checkRemoval [
 { #category : #testing }
 ODBLockRegistry >> hasForeignLockFor: aTransactionObject transaction: aTransaction [
 	"test if there is a lock that is present and that belongs to aTransaction"
-	^ locks 
-		at: aTransactionObject lockRegistryKey 
-		ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
-		ifAbsent: [ false ]
+	^ mutex critical: [
+		locks 
+			at: aTransactionObject lockRegistryKey 
+			ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
+			ifAbsent: [ false ] ]
 ]
 
 { #category : #testing }
 ODBLockRegistry >> hasKeyLockOn: aBtreeDictionary key: key [ 
-	^ locks includesKey: (aBtreeDictionary lockRegistryKeyAt: key)
+	^ mutex critical: [
+		locks includesKey: (aBtreeDictionary lockRegistryKeyAt: key) ]
 ]
 
 { #category : #initialization }
 ODBLockRegistry >> initialize [ 
 	super initialize.
+	mutex := Semaphore forMutualExclusion.
 	locks := Dictionary new
 ]
 
@@ -94,27 +98,30 @@ ODBLockRegistry >> isEmpty [
 
 { #category : #testing }
 ODBLockRegistry >> keyLockOn: aBtreeDictionary key: key ifAbsent: aBlock [
-	^ locks 
-		at: (aBtreeDictionary lockRegistryKeyAt: key) 
-		ifAbsent: aBlock
+	^ mutex critical: [
+		locks 
+			at: (aBtreeDictionary lockRegistryKeyAt: key) 
+			ifAbsent: aBlock ]
 ]
 
 { #category : #adding }
 ODBLockRegistry >> lockAt: key put: aLock [ 
-	locks 
-		at: key
-		ifPresent: [ :lock |
-			^ lock isSameTransaction: aLock transaction ].
-	locks 
-		at: key 
-		put: aLock.
+	mutex critical: [  
+		locks 
+			at: key
+			ifPresent: [ :lock |
+				^ lock isSameTransaction: aLock transaction ].
+		locks 
+			at: key 
+			put: aLock ].
 	^ true
 ]
 
 { #category : #'as yet unclassified' }
 ODBLockRegistry >> locksWithTransaction: aTransaction [ 
-	^ locks values 
-		select: [ :lock | lock transaction = aTransaction ]
+	^ mutex critical: [
+		locks values 
+			select: [ :lock | lock transaction = aTransaction ] ]
 ]
 
 { #category : #accessing }
@@ -135,15 +142,16 @@ ODBLockRegistry >> remove [
 
 { #category : #removing }
 ODBLockRegistry >> removeLock: anODBObjectLock [ 
-	locks 
-		removeKey: anODBObjectLock lockRegistryKey 
-		ifAbsent: [  ].
+	mutex critical: [
+		locks 
+			removeKey: anODBObjectLock lockRegistryKey 
+			ifAbsent: [  ] ].
 	self checkRemoval 
 ]
 
 { #category : #initialization }
 ODBLockRegistry >> reset [
-	locks removeAll
+	locks := Dictionary 
 ]
 
 { #category : #accessing }
