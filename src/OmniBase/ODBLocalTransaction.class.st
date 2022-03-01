@@ -12,7 +12,7 @@ Class {
 
 { #category : #private }
 ODBLocalTransaction >> addLock: anObjectLock [
-        "Private - Add aLock to receiver."
+   "Private - Add aLock to receiver."
 	anObjectLock transaction: self.
 	locks add: anObjectLock.
    ^ lockRegistry addLock: anObjectLock
@@ -116,7 +116,8 @@ ODBLocalTransaction >> hasKeyLockOn: aBtreeDictionary key: aCollection [
 ]
 
 { #category : #testing }
-ODBLocalTransaction >> hasLocks [ 	
+ODBLocalTransaction >> hasLocks [
+ 	
 	^ locks notEmpty
 ]
 

@@ -1,3 +1,13 @@
+"
+ODBLockRegistry
+=============== 
+
+ODBLockRegistry is a central instance that coordinates locks across transaction boundaries. When Omnibase was created it was developped on an ancient windows platform. On this platform a lock to a file was always exclusive so no other attempt to access that same file was successful. A big part of the implementation relies on that.
+
+In the context *nix systems this did not work because the semanics for file locks are different. In *nix system a file lock only protects file access between different OS processes. Within the same OS process these locks are not doing anything because it is assumed that the program that runs in a process has better ways to coordinate concurrent access to files.   
+
+ODBLockRegistry closes this gap by providing a central way of managing locks. A Omnibase is contained in a file directory. Concurrent access is therefor only to be managed within one of this directories. Therefor all instances of Omnibase receive the same instance of a lock registry. The Omnibase instance itself registers each lock it acquires in the registry and this way we can detect early lock conflicts
+"
 Class {
 	#name : #ODBLockRegistry,
 	#superclass : #Object,
@@ -15,6 +25,9 @@ Class {
 { #category : #'as yet unclassified' }
 ODBLockRegistry class >> forPath: aString [ 
 	| path |
+	"locks are managed per omnibase path on disk. So every instance of 
+	OmniBase that access the same path gets the same lock registry to 
+	manage conflicts across transaction boundaries"
 	path := aString asFileReference asAbsolute.
 	^ registries 
 		at: path 
