@@ -117,13 +117,6 @@ ODBLockRegistry >> lockAt: key put: aLock [
 	^ true
 ]
 
-{ #category : #'as yet unclassified' }
-ODBLockRegistry >> locksWithTransaction: aTransaction [ 
-	^ mutex critical: [
-		locks values 
-			select: [ :lock | lock transaction = aTransaction ] ]
-]
-
 { #category : #accessing }
 ODBLockRegistry >> path [
 

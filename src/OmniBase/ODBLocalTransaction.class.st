@@ -14,6 +14,7 @@ Class {
 ODBLocalTransaction >> addLock: anObjectLock [
         "Private - Add aLock to receiver."
 	anObjectLock transaction: self.
+	locks add: anObjectLock.
    ^ lockRegistry addLock: anObjectLock
 ]
 
@@ -23,6 +24,7 @@ ODBLocalTransaction >> addLoggedLock: aKeyLock [
 
 	aKeyLock transaction: self.
 	(lockRegistry addLock: aKeyLock) ifFalse: [ ^ false ]. 
+	locks add: aKeyLock.
 	transactionFile lockAdd: aKeyLock.
 	^ true
 	
@@ -115,14 +117,15 @@ ODBLocalTransaction >> hasKeyLockOn: aBtreeDictionary key: aCollection [
 
 { #category : #testing }
 ODBLocalTransaction >> hasLocks [ 	
-	^ self locks notEmpty
+	^ locks notEmpty
 ]
 
 { #category : #initialization }
 ODBLocalTransaction >> initialize [
 
-    super initialize.
-    newObjects := Array new: 16
+	super initialize.
+	locks := OrderedCollection new.
+	newObjects := Array new: 16
 ]
 
 { #category : #public }
@@ -317,7 +320,8 @@ ODBLocalTransaction >> removeCachedObjectID: objectID [
 ODBLocalTransaction >> removeLock: aLock [ 
 	"Private - Remove aLock from collection of set locks."
 
-	lockRegistry removeLock: aLock 
+	lockRegistry removeLock: aLock.
+	locks remove: aLock ifAbsent: [  ]
 ]
 
 { #category : #private }
@@ -325,7 +329,8 @@ ODBLocalTransaction >> removeLoggedLock: aODBLock [
 	"Private - Remove anODBLock from receiver and remove it from transaction file."
 
 	lockRegistry removeLock: aODBLock.
-	transactionFile lockRemove: aODBLock
+	transactionFile lockRemove: aODBLock.
+	locks remove: aODBLock ifAbsent: [  ]
 ]
 
 { #category : #public }
