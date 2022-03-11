@@ -7,9 +7,14 @@ BinaryFileStream >> fileHandle [
 ]
 
 { #category : #'*OmniBase' }
-BinaryFileStream >> readOnlyCopy [
 
-	^ file openForRead
+BinaryFileStream >> readInto: aByteArray startingAt: aNumber for: length [
+
+	^ File 
+		read: handle 
+		into: aByteArray 
+		startingAt: aNumber 
+		count: length
 ]
 
 { #category : #'*OmniBase' }
