@@ -568,14 +568,6 @@ ODBEncodingStream >> nextSmallFloat64: aDeserializer [
 ]
 
 { #category : #actions }
-ODBEncodingStream >> nextString [
-	| buf len |
-	buf := ByteArray new: (len := stream getPositiveInteger).
-	stream getBytesFor: buf len: len.
-	^  buf asString
-]
-
-{ #category : #actions }
 ODBEncodingStream >> nextString: aDeserializer [
 	| buf len string |
 	buf := ByteArray new: (len := stream getPositiveInteger).
