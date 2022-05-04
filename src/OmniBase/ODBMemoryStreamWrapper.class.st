@@ -25,13 +25,6 @@ ODBMemoryStreamWrapper >> getByte [
 ]
 
 { #category : #public }
-ODBMemoryStreamWrapper >> getBytesFor: aByteCollection len: len [ 
-	"Read len bytes from stream to aByteCollection. Answer number of bytes actualy read."
-
-	^ stream readInto: aByteCollection startingAt: 1 count: len
-]
-
-{ #category : #public }
 ODBMemoryStreamWrapper >> getChar [
 
     ^ Character value: self getByte

@@ -9,12 +9,14 @@ Class {
 
 { #category : #accessing }
 ODBFileStreamWrapper >> atPosition: anInteger getBytesFor: aByteCollection [
+
 	"Read bytes from stream at position anInteger. 
     Answer number of bytes actualy read."
 
 	^ mutex critical: [ 
-		  stream position: anInteger.
-		  self basicGetBytesFor: aByteCollection len: aByteCollection size ]
+		stream position: anInteger.
+		self flush.
+		super getBytesFor: aByteCollection len: aByteCollection size ]
 ]
 
 { #category : #accessing }
@@ -24,7 +26,8 @@ ODBFileStreamWrapper >> atPosition: anInteger getBytesFor: aByteCollection len: 
 
 	^ mutex critical: [ 
 		stream position: anInteger.
-		self basicGetBytesFor: aByteCollection len: len ]
+		self flush.
+		super getBytesFor: aByteCollection len: len ]
 ]
 
 { #category : #accessing }
@@ -68,16 +71,6 @@ ODBFileStreamWrapper >> atPositionGetLong: pos [
 		getBytesFor: buf
 		len: 4) == 4 
 		ifTrue: [buf odbLongAt: 1]
-]
-
-{ #category : #accessing }
-ODBFileStreamWrapper >> basicGetBytesFor: aByteCollection len: len [
-		"Read len bytes from stream to aByteCollection. 
-		Answer number of bytes actualy read."
-
-	^ stream 
-		flush; 
-		readInto: aByteCollection startingAt: 1 count: len
 ]
 
 { #category : #accessing }
@@ -137,11 +130,13 @@ ODBFileStreamWrapper >> getByte [
 ]
 
 { #category : #public }
-ODBFileStreamWrapper >> getBytesFor: aByteCollection len: len [ 
+ODBFileStreamWrapper >> getBytesFor: aByteCollection len: len [
 	"Read len bytes from stream to aByteCollection. 
 	Answer number of bytes actualy read."
 
-	^ mutex critical: [self basicGetBytesFor: aByteCollection len: len]
+	^ mutex critical: [
+		self flush.
+		super getBytesFor: aByteCollection len: len]
 ]
 
 { #category : #public }
