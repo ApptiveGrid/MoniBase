@@ -38,6 +38,6 @@ BlockClosure >> evaluateIn: anOmniBaseTransaction [
 
 { #category : #'*omnibase' }
 BlockClosure >> odbSerialize: serializer [
-
+	"Not stored, thus no registration needed"
 	serializer cantSave: self
 ]

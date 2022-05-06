@@ -14,6 +14,6 @@ False >> odbObjectID [
 
 { #category : #'*omnibase' }
 False >> odbSerialize: serializer [
-
+	"registration not needed, as we always return the one false on read"
 	self odbBasicSerialize: serializer
 ]

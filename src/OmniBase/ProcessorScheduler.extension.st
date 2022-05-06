@@ -8,6 +8,6 @@ ProcessorScheduler >> odbBasicSerialize: serializer [
 
 { #category : #'*omnibase' }
 ProcessorScheduler >> odbSerialize: serializer [
-
+	"registration not needed, as we always return the current Process value on read"
 	self odbBasicSerialize: serializer
 ]

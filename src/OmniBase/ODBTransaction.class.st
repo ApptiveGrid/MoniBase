@@ -272,7 +272,7 @@ ODBTransaction >> odbObjectID [
 
 { #category : #'private/unclassified' }
 ODBTransaction >> odbSerialize: serializer [
-
+	self flag: #TODO. "Explain why we do not need to register?"
 	self odbBasicSerialize: serializer
 ]
 

@@ -32,6 +32,6 @@ UndefinedObject >> odbObjectID [
 
 { #category : #'*omnibase' }
 UndefinedObject >> odbSerialize: serializer [
-
+	"registration not needed, as we always return the one nil on read"""
 	self odbBasicSerialize: serializer
 ]

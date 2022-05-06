@@ -14,7 +14,7 @@ Class class >> odbDeserialize: deserializer [
 
 { #category : #'*omnibase' }
 Class >> odbSerialize: serializer [
-
+	"registration not needed, as we always return the current class on read"
 	self odbBasicSerialize: serializer
 ]
 

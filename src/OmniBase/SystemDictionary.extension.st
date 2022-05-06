@@ -8,6 +8,6 @@ SystemDictionary >> odbBasicSerialize: serializer [
 
 { #category : #'*omnibase' }
 SystemDictionary >> odbSerialize: serializer [
-
+	"registration not needed, as we always return the current Smalltalk globals value on read"
 	self odbBasicSerialize: serializer
 ]
