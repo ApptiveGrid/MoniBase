@@ -84,10 +84,10 @@ ODBDatabaseObject >> openOn: anObjectHolder [
     objectHolder := anObjectHolder
 ]
 
-{ #category : #'public/unclassified' }
+{ #category : #public }
 ODBDatabaseObject >> referencesDo: aBlock [
 ]
 
-{ #category : #'public/unclassified' }
+{ #category : #public }
 ODBDatabaseObject >> remove [
 ]

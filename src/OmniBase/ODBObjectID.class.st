@@ -37,20 +37,20 @@ ODBObjectID >> = other [
 	other containerID == containerID]]
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> containerID [
 
     ^containerID
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> containerID: byte index: ulong [
 
     containerID := byte.
     index := ulong
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> contents [
         "Answer ByteArray representing receiver."
 
@@ -60,7 +60,7 @@ ODBObjectID >> contents [
     ^bytes
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> contents: aByteArray [
         "Initialize receiver from aByteArray."
 
@@ -68,7 +68,7 @@ ODBObjectID >> contents: aByteArray [
     index := ((aByteArray at: 3) bitShift: 16) + ((aByteArray at: 2) bitShift: 8) + (aByteArray at: 1)
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> fromBytes: aByteArray at: pos [
         "Initialize receiver from aByteArray at pos."
 
@@ -78,19 +78,19 @@ ODBObjectID >> fromBytes: aByteArray at: pos [
                 (aByteArray at: pos)
 ]
 
-{ #category : #'public/unclassified' }
+{ #category : #comparing }
 ODBObjectID >> hash [
 
     ^index + (containerID bitShift: 17)
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> index [
 
     ^index
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> index: ulong [
 
     index := ulong
@@ -105,13 +105,13 @@ ODBObjectID >> loadFromStream: aStream [
     self fromBytes: bytes at: 1
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> lockRegistryKey [
 	^ String streamContents: [ :stream |
 		self lockRegistryKeyOn: stream ]
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> lockRegistryKeyAt: aKey [
 	^ String streamContents: [ :stream |
 		self lockRegistryKeyOn: stream.
@@ -138,7 +138,7 @@ ODBObjectID >> printOn: aStream [
 	aStream nextPut: $)
 ]
 
-{ #category : #'public/accessing' }
+{ #category : #accessing }
 ODBObjectID >> putBytesTo: bytes at: pos [
 
 	bytes
