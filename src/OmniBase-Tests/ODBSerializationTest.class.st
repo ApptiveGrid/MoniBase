@@ -39,6 +39,16 @@ ODBSerializationTest >> testSerializationAssociation [
 ]
 
 { #category : #tests }
+ODBSerializationTest >> testSerializationBlockClosure [
+	| object serialized materialized |
+	object := [].
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: #'FullBlockClosure can''t be stored!'
+]
+
+{ #category : #tests }
 ODBSerializationTest >> testSerializationBoolean [
 	| object serialized materialized |
 	object := true.
@@ -385,6 +395,16 @@ ODBSerializationTest >> testSerializationOrderedCollection [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationProcess [
+	| object serialized materialized |
+	object := Processor activeProcess.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: #'Process can''t be stored!'
 ]
 
 { #category : #tests }
