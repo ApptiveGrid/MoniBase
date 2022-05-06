@@ -19,7 +19,7 @@ ODBRootObjectDBHolder >> makeTransactionObject: aTransaction [
 		transaction: aTransaction
 ]
 
-{ #category : #'public/transaction processing' }
+{ #category : #public }
 ODBRootObjectDBHolder >> referencesDo: aBlock [
 
 	aBlock value: objectHolder rootObjectID

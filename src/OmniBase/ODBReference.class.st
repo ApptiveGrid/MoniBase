@@ -87,16 +87,20 @@ ODBReference >> notNil [
 
 { #category : #accessing }
 ODBReference >> odbGetOID [
-	transactionObject == nil ifTrue: [^demandLoader odbObjectID].
-	^transactionObject objectID
+
+	^ transactionObject
+		  ifNil: [ demandLoader odbObjectID ]
+		  ifNotNil: [ :trObject | trObject objectID ]
 ]
 
 { #category : #accessing }
 ODBReference >> odbGetTransaction [
+
 	"Answer transaction that owns the reference."
 
-	transactionObject isNil ifTrue: [^demandLoader transaction].
-	^transactionObject transaction
+	^ transactionObject
+		  ifNil: [ demandLoader transaction ]
+		  ifNotNil: [ :trObject | trObject transaction ]
 ]
 
 { #category : #private }
@@ -110,16 +114,19 @@ ODBReference >> odbNotLoaded [
 { #category : #accessing }
 ODBReference >> odbObjectID [
 
-	^ transactionObject ifNil: [ demandLoader odbObjectID ] ifNotNil: [ :obj | obj objectID ]
+	^ transactionObject
+		  ifNil: [ demandLoader odbObjectID ]
+		  ifNotNil: [ :obj | obj objectID ]
 ]
 
 { #category : #public }
 ODBReference >> odbResolve [
+
 	"See Object>>#odbResolve for comment."
 
-	^transactionObject isNil 
-		ifTrue: [demandLoader getObject]
-		ifFalse: [transactionObject value]
+	^ transactionObject
+		  ifNil: [ demandLoader getObject ]
+		  ifNotNil: [ :trObject | trObject value ]
 ]
 
 { #category : #serialization }
@@ -146,8 +153,9 @@ ODBReference >> odbSetTransactionObject: anODBTransactionObject [
 ODBReference >> odbTransaction [
 	"Answer transaction that owns the reference."
 
-	transactionObject isNil ifTrue: [^demandLoader transaction].
-	^transactionObject transaction
+	^ transactionObject
+		  ifNil: [ demandLoader transaction ]
+		  ifNotNil: [ :trObject | trObject transaction ]
 ]
 
 { #category : #private }

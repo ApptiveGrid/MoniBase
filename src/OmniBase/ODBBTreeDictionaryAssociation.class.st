@@ -54,7 +54,7 @@ ODBBTreeDictionaryAssociation >> value [
 
 { #category : #private }
 ODBBTreeDictionaryAssociation >> valueHolder [
-        "Private - Answer BTree valueHolder."
+	"Private - Answer BTree valueHolder."
 
     ^valueHolder
 ]
@@ -67,7 +67,8 @@ ODBBTreeDictionaryAssociation >> valueObjectID [
 
 { #category : #public }
 ODBBTreeDictionaryAssociation >> valueOrObjectID [
-	| obj |
-	(obj := valueHolder object) isNil ifFalse: [^obj].
-	^valueHolder objectID
+
+	^ valueHolder object
+		  ifNil: [ valueHolder objectID ]
+		  ifNotNil: [ :object | object ]
 ]

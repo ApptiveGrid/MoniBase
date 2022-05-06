@@ -42,29 +42,31 @@ ODBIdentityDictionary >> associationsDo: aBlock [
 				ifFalse: [aBlock value: (Association key: key value: (values at: i))]]
 ]
 
-{ #category : #public }
-ODBIdentityDictionary >> at: anObject [ 
+{ #category : #accessing }
+ODBIdentityDictionary >> at: anObject [
+
 	"Answer value at anObject, <nil> if absent."
 
 	| index lastIndex key |
 	lastIndex := keys size.
 	index := anObject identityHash \\ lastIndex.
-	[anObject == (key := keys at: (index := index + 1))] whileFalse: 
-			[key isNil ifTrue: [^nil].
-			index == lastIndex ifTrue: [index := 0]].
-	^values at: index
+	[ anObject == (key := keys at: (index := index + 1)) ] whileFalse: [ 
+		key ifNil: [ ^ nil ].
+		index == lastIndex ifTrue: [ index := 0 ] ].
+	^ values at: index
 ]
 
 { #category : #public }
-ODBIdentityDictionary >> at: anObject ifAbsent: aBlock [ 
+ODBIdentityDictionary >> at: anObject ifAbsent: aBlock [
+
 	| index lastIndex key |
-	anObject isNil ifTrue: [^aBlock value].
+	anObject ifNil: [ ^ aBlock value ].
 	lastIndex := keys size.
 	index := anObject identityHash \\ lastIndex.
-	[anObject == (key := keys at: (index := index + 1))] whileFalse: 
-			[key isNil ifTrue: [^aBlock value].
-			index == lastIndex ifTrue: [index := 0]].
-	^values at: index
+	[ anObject == (key := keys at: (index := index + 1)) ] whileFalse: [ 
+		key ifNil: [ ^ aBlock value ].
+		index == lastIndex ifTrue: [ index := 0 ] ].
+	^ values at: index
 ]
 
 { #category : #public }
@@ -72,8 +74,9 @@ ODBIdentityDictionary >> at: anObject ifAbsentPut: aBlock [
 	^self at: anObject ifAbsent: [self at: anObject put: aBlock value]
 ]
 
-{ #category : #public }
-ODBIdentityDictionary >> at: aKey put: anObject [ 
+{ #category : #accessing }
+ODBIdentityDictionary >> at: aKey put: anObject [
+
 	"Answer anObject. If aKey exists in the receiver,
 	replace the corresponding value with anObject, else
 	add the aKey/anObject pair to the receiver."
@@ -81,19 +84,18 @@ ODBIdentityDictionary >> at: aKey put: anObject [
 	| index lastIndex key |
 	lastIndex := keys size.
 	index := aKey identityHash \\ lastIndex.
-	[aKey == (key := keys at: (index := index + 1))] whileFalse: 
-			[key isNil 
-				ifTrue: 
-					[keys at: index put: aKey.
-					values at: index put: anObject.
-					(elementCount := elementCount + 1) < sizeLimit ifFalse: [self grow].
-					^anObject].
-			key == emptySlotMarker 
-				ifTrue: 
-					[keys at: index put: aKey.
-					^values at: index put: anObject].
-			index == lastIndex ifTrue: [index := 0]].
-	^values at: index put: anObject
+	[ aKey == (key := keys at: (index := index + 1)) ] whileFalse: [ 
+		key ifNil: [ 
+			keys at: index put: aKey.
+			values at: index put: anObject.
+			(elementCount := elementCount + 1) < sizeLimit ifFalse: [ 
+				self grow ].
+			^ anObject ].
+		key == emptySlotMarker ifTrue: [ 
+			keys at: index put: aKey.
+			^ values at: index put: anObject ].
+		index == lastIndex ifTrue: [ index := 0 ] ].
+	^ values at: index put: anObject
 ]
 
 { #category : #public }
@@ -127,14 +129,15 @@ ODBIdentityDictionary >> grow [
 ]
 
 { #category : #public }
-ODBIdentityDictionary >> includesKey: anObject [ 
+ODBIdentityDictionary >> includesKey: anObject [
+
 	| index lastIndex key |
 	lastIndex := keys size.
 	index := anObject identityHash \\ lastIndex.
-	[anObject == (key := keys at: (index := index + 1))] whileFalse: 
-			[key isNil ifTrue: [^false].
-			index == lastIndex ifTrue: [index := 0]].
-	^true
+	[ anObject == (key := keys at: (index := index + 1)) ] whileFalse: [ 
+		key ifNil: [ ^ false ].
+		index == lastIndex ifTrue: [ index := 0 ] ].
+	^ true
 ]
 
 { #category : #private }
@@ -180,20 +183,21 @@ ODBIdentityDictionary >> removeKey: aKey [
 ]
 
 { #category : #public }
-ODBIdentityDictionary >> removeKey: aKey ifAbsent: aBlock [ 
+ODBIdentityDictionary >> removeKey: aKey ifAbsent: aBlock [
+
 	"Remove aKey from receiver. Evaluate aBlock if absent."
 
 	| index lastIndex key |
 	lastIndex := keys size.
 	index := aKey identityHash \\ lastIndex.
-	[aKey == (key := keys at: (index := index + 1))] whileFalse: 
-			[key isNil ifTrue: [^aBlock value].
-			index == lastIndex ifTrue: [index := 0]].
+	[ aKey == (key := keys at: (index := index + 1)) ] whileFalse: [ 
+		key ifNil: [ ^ aBlock value ].
+		index == lastIndex ifTrue: [ index := 0 ] ].
 	keys at: index put: emptySlotMarker.
-	^values at: index put: nil
+	^ values at: index put: nil
 ]
 
-{ #category : #public }
+{ #category : #accessing }
 ODBIdentityDictionary >> size [
 	"Answer number of elements in dictionary."
 
