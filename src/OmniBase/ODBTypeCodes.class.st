@@ -61,7 +61,6 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBInternalReference := 4.
 	ODBExternalReferenceCode := 5.
 	"6 .. 10"
-	ODBNilCode := 10.
 	ODBLargePositiveIntegerCode := 11.
 	ODBLargeNegativeIntegerCode := 12.
 	ODBCharacterCode := 13.
