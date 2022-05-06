@@ -124,7 +124,7 @@ ODBReference >> odbResolve [
 
 { #category : #serialization }
 ODBReference >> odbSerialize: serializer [
-
+	"registration happens in the demandLoader"
 	^demandLoader odbSerialize: serializer
 ]
 

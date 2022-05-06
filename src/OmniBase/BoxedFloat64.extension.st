@@ -7,6 +7,6 @@ BoxedFloat64 >> odbBasicSerialize: serializer [
 
 { #category : #'*OmniBase' }
 BoxedFloat64 >> odbSerialize: serializer [
-
+	self flag: #TODO. "Explain why we do not register Boxed Floats?"
 	self odbBasicSerialize: serializer
 ]

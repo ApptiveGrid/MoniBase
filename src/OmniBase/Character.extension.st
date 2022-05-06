@@ -14,6 +14,6 @@ Character class >> odbDeserialize: deserializer [
 
 { #category : #'*omnibase' }
 Character >> odbSerialize: serializer [
-
+	"Immediate object, no registration needed"
 	self odbBasicSerialize: serializer
 ]

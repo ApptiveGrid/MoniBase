@@ -6,6 +6,7 @@ SmallFloat64 >> odbBasicSerialize: serializer [
 ]
 
 { #category : #'*OmniBase' }
-SmallFloat64 >> odbSerialize: serializer [ 
+SmallFloat64 >> odbSerialize: serializer [
+	"immediate object, no registration needed"
 	self odbBasicSerialize: serializer
 ]

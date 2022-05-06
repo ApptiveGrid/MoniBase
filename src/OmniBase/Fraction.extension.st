@@ -14,6 +14,6 @@ Fraction class >> odbDeserialize: deserializer [
 
 { #category : #'*omnibase' }
 Fraction >> odbSerialize: serializer [
-
+	self flag: #TODO. "Explain why registration is not needed?"
 	self odbBasicSerialize: serializer
 ]
