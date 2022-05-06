@@ -399,6 +399,23 @@ ODBSerializationTest >> testSerializationProcessSchedulerCode [
 	self assert: materialized equals: Processor
 ]
 
+{ #category : #'tests-hashed' }
+ODBSerializationTest >> testSerializationSet [
+	"Set uses the hash to find elements, this might be identity, which changes"
+
+	| set object2 serialized materialized |
+
+	set := Set new.
+	object2 := ODBTestClass1 new.
+	set add: object2.
+
+	serialized := ODBSerializer serializeToBytes: set.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self deny: materialized anyOne identicalTo: set.
+	self assert: (materialized includes:  materialized anyOne)
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationSmallFloat64 [
 	| float serialized materialized |
