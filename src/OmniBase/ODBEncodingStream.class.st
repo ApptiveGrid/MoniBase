@@ -57,7 +57,6 @@ ODBEncodingStream class >> initializeTypeCodeMapping [
 		at: ODBInternalReference                 put: ODBExistingObject;
 		at: ODBExternalReferenceCode             put: ODBExternalReference;
 		at: 6                                    put: ODBClassManagerForSerialization;
-		at: ODBNilCode                           put: nil;
 		at: ODBLargePositiveIntegerCode          put: ODBLargePositiveInteger;
 		at: ODBLargeNegativeIntegerCode          put: ODBLargeNegativeInteger;
 		at: ODBCharacterCode                     put: Character;
