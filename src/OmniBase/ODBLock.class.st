@@ -10,10 +10,15 @@ Class {
 	#category : #'OmniBase-Transaction'
 }
 
+{ #category : #testing }
+ODBLock class >> isAbstract [
+		
+	^ self == ODBLock
+]
+
 { #category : #public }
 ODBLock class >> lockClassID [
-	"Answer unique class ID used for storing locks 
-        or <nil> if lock does not need to be stored."
+	"Answer unique class ID used for storing locks or <nil> if lock does not need to be stored."
 
 	self subclassResponsibility
 ]
@@ -21,6 +26,11 @@ ODBLock class >> lockClassID [
 { #category : #testing }
 ODBLock >> isSameTransaction: anODBLocalTransaction [ 
 	^ transaction = anODBLocalTransaction
+]
+
+{ #category : #'public/load/store' }
+ODBLock >> loadFromStream: aStream [ 
+	^ self subclassResponsibility
 ]
 
 { #category : #'public/accessing' }
@@ -64,6 +74,11 @@ ODBLock >> objectID: anObjectID [
     objectID := anObjectID
 ]
 
+{ #category : #'public/load/store' }
+ODBLock >> storeOnStream: aStream [
+	^ self subclassResponsibility
+]
+
 { #category : #accessing }
 ODBLock >> transaction [
 	^ transaction
@@ -75,9 +90,14 @@ ODBLock >> transaction: aTransaction [
     transaction := aTransaction
 ]
 
-{ #category : #'private/unclassified' }
+{ #category : #accessing }
 ODBLock >> transactionObject [
-        "Private - Get transaction object corresponding to objectID."
+	"Private - Get transaction object corresponding to objectID."
 
     ^transaction transactionObjectAt: objectID
+]
+
+{ #category : #locking }
+ODBLock >> unlock [
+	^ self subclassResponsibility
 ]

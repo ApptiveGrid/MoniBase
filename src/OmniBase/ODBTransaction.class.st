@@ -24,42 +24,42 @@ ODBTransaction class >> odbDeserialize: deserializer [
 
 { #category : #public }
 ODBTransaction >> abort [
+
 	"Abort transaction. After aborting it, it can not be used anymore."
 
-	transactionManager isNil ifFalse: [transactionManager critical: [self basicAbort]].
+	transactionManager ifNotNil: [ 
+		transactionManager critical: [ self basicAbort ] ].
 
-	self triggerEvent: #finishedTransaction: with: self.
+	self triggerEvent: #finishedTransaction: with: self
 ]
 
 { #category : #public }
 ODBTransaction >> basicAbort [
+
 	"Private - Abort transaction. After aborting it, it can not be used anymore."
 
 	| changes |
-	dbConnection isNil 
-		ifFalse: [	
-			 locks ifNotEmpty: [
-				(changes := transactionFile recovery) isNil 
-						ifFalse: [
-							changes
-								transaction: self;
-								rollback.
-							transactionFile recovery: nil].
-				locks do: [:each | 
-					each unlock.
-					lockRegistry removeLock: each ]].
-			transactionManager transactionAborted: self.
-			client transactionRemove: self].
+	dbConnection ifNotNil: [ 
+		locks ifNotEmpty: [ 
+			(changes := transactionFile recovery) ifNotNil: [ 
+				changes
+					transaction: self;
+					rollback.
+				transactionFile recovery: nil ].
+			locks do: [ :each | 
+				each unlock.
+				lockRegistry removeLock: each ] ].
+		transactionManager transactionAborted: self.
+		client transactionRemove: self ].
 	objects := nil.
 	client := nil.
 	dbConnection := nil.
 	transactionManager := nil.
 
 	objectIndex := nil.
-	cacheMutex isNil 
-		ifFalse: 
-			[cacheMutex terminateProcess.
-			cacheMutex := nil]
+	cacheMutex ifNotNil: [ 
+		cacheMutex terminateProcess.
+		cacheMutex := nil ]
 ]
 
 { #category : #public }
@@ -95,43 +95,42 @@ ODBTransaction >> environment [
 ]
 
 { #category : #public }
-ODBTransaction >> freshObjectAt: objectID [ 
+ODBTransaction >> freshObjectAt: objectID [
+
 	"Answers a recently read object fount at objectID, <nil> if it does not exist."
 
 	| transactionObject |
+	objects ifNil: [ 
+		OmniBase signalError: 'Transaction was already aborted' ].
+	objectID containerID == 0 ifTrue: [ 
+		^ self transactionReferenceAt: objectID index ].
 
-	objects isNil ifTrue: [OmniBase signalError: 'Transaction was already aborted'].
-	objectID containerID == 0 ifTrue: [^self transactionReferenceAt: objectID index].
-
-	^ (transactionObject := self freshTransactionObjectAt: objectID) isNil ifFalse: [
-		transactionObject value]
+	^ (transactionObject := self freshTransactionObjectAt: objectID) 
+		  ifNotNil: [ transactionObject value ]
 ]
 
 { #category : #public }
-ODBTransaction >> freshTransactionObjectAt: objectID [ 
+ODBTransaction >> freshTransactionObjectAt: objectID [
+
 	"Private - Answer transaction object at objectID
 	that is guaranteed to be recently read, as opposed to a cached version."
 
 	| holder transactionObject t2 |
-	cacheMutex isNil ifTrue: [^ODBExpiredProxyObject on: objectID].
-	"cacheMutex critical: [transactionObject := objects at: objectID].	
-	transactionObject isNil ifFalse: [^transactionObject]."
-	(holder := dbConnection objectManager holderAt: objectID) isNil 
-		ifTrue: 
-			["OID (1:1) = nil"
-			^transactionObject := (objectID index = 1 and: [objectID containerID = 1]) 
-						ifFalse: [OmniBase signalError: 'Invalid object ID']].
-	[versionDescriptor versionOK: holder versionNumber] 
-		whileFalse: [holder loadPreviousVersionFrom: self oldHolders].
-	[transactionObject := holder getObject makeTransactionObject: self] 
-		ifCurtailed: [self becomeInconsistent].
+	cacheMutex ifNil: [ ^ ODBExpiredProxyObject on: objectID ].
+	(holder := dbConnection objectManager holderAt: objectID) ifNil: [ "OID (1:1) = nil"
+		^ transactionObject := (objectID index = 1 and: [ 
+			                        objectID containerID = 1 ]) ifFalse: [ 
+			                       OmniBase signalError: 'Invalid object ID' ] ].
+	[ versionDescriptor versionOK: holder versionNumber ] whileFalse: [ 
+		holder loadPreviousVersionFrom: self oldHolders ].
+	[ transactionObject := holder getObject makeTransactionObject: self ] 
+		ifCurtailed: [ self becomeInconsistent ].
 
-	cacheMutex critical: 
-			[(t2 := objects at: objectID) isNil 
-				ifTrue: 
-					[objects at: objectID put: transactionObject.
-					objectIndex at: transactionObject value put: transactionObject]].
-	^t2 isNil ifTrue: [transactionObject objectLoaded] ifFalse: [t2]
+	cacheMutex critical: [ 
+		(t2 := objects at: objectID) ifNil: [ 
+			objects at: objectID put: transactionObject.
+			objectIndex at: transactionObject value put: transactionObject ] ].
+	^ t2 ifNil: [ transactionObject objectLoaded ] ifNotNil: [ t2 ]
 ]
 
 { #category : #public }
@@ -145,51 +144,53 @@ ODBTransaction >> getLoadedObjects [
 ]
 
 { #category : #public }
-ODBTransaction >> getObjectID: anObject [ 
+ODBTransaction >> getObjectID: anObject [
+
 	"Answer <objectID> coresponding to anObject."
 
 	| transactionObject oid |
-	anObject odbObjectID isNil ifFalse: [^anObject odbObjectID].
-	cacheMutex critical: [transactionObject := objectIndex at: anObject].
-	transactionObject isNil 
-		ifTrue: 
-			[OmniBase 
-				signalError: 'Object is not persistent or is contained in another persistent object'].
-	(oid := transactionObject objectID) index == 0 
-		ifTrue: 
-			[OmniBase 
-				signalError: 'Object ID is not allocated yet. Object ID will be allocated after transaction checkpoint or commit.'].
-	^oid
+	anObject odbObjectID ifNotNil: [ ^ anObject odbObjectID ].
+	cacheMutex critical: [ transactionObject := objectIndex at: anObject ].
+	transactionObject ifNil: [ 
+		OmniBase signalError:
+			'Object is not persistent or is contained in another persistent object' ].
+	(oid := transactionObject objectID) index == 0 ifTrue: [ 
+		OmniBase signalError:
+			'Object ID is not allocated yet. Object ID will be allocated after transaction checkpoint or commit.' ].
+	^ oid
 ]
 
 { #category : #public }
-ODBTransaction >> getObjectIDOrNil: anObject [ 
+ODBTransaction >> getObjectIDOrNil: anObject [
+
 	"Private - Answer <objectID> coresponding to anObject 
         or <nil> if not allready stored."
 
 	| transactionObject oid |
-	anObject odbObjectID isNil ifFalse: [^anObject odbObjectID].
+	anObject odbObjectID ifNotNil: [ ^ anObject odbObjectID ].
 
-	self isAborted ifTrue:[^nil].
+	self isAborted ifTrue: [ ^ nil ].
 
-	cacheMutex critical: [transactionObject := objectIndex at: anObject].
-	^transactionObject isNil 
-		ifFalse: [(oid := transactionObject objectID) index == 0 ifFalse: [oid]]
+	cacheMutex critical: [ transactionObject := objectIndex at: anObject ].
+	^ transactionObject ifNotNil: [ 
+		  (oid := transactionObject objectID) index == 0 ifFalse: [ oid ] ]
 ]
 
 { #category : #private }
-ODBTransaction >> getTransactionObject: anObject ifAbsent: aBlock [ 
+ODBTransaction >> getTransactionObject: anObject ifAbsent: aBlock [
+
 	"Private - Answer transaction object corresponding to anObject.
 	Evaluate aBlock if none."
 
 	| transactionObject |
-	anObject isODBReference 
-		ifTrue: 
-			[anObject odbTransaction == self 
-				ifFalse: [OmniBase signalError: 'Reference from another transaction'].
-			^anObject odbTransactionObject].
-	cacheMutex critical: [transactionObject := objectIndex at: anObject].
-	^transactionObject isNil ifTrue: [aBlock value] ifFalse: [transactionObject]
+	anObject isODBReference ifTrue: [ 
+		anObject odbTransaction == self ifFalse: [ 
+			OmniBase signalError: 'Reference from another transaction' ].
+		^ anObject odbTransactionObject ].
+	cacheMutex critical: [ transactionObject := objectIndex at: anObject ].
+	^ transactionObject
+		  ifNil: [ aBlock value ]
+		  ifNotNil: [ transactionObject ]
 ]
 
 { #category : #initialization }
@@ -238,24 +239,27 @@ ODBTransaction >> locks [
 ]
 
 { #category : #public }
-ODBTransaction >> objectAt: objectID [ 
+ODBTransaction >> objectAt: objectID [
+
 	"Answer object at objectID, <nil> if it does not exist."
 
 	| transactionObject |
-	objects isNil ifTrue: [OmniBase signalError: 'Transaction was already aborted'].
-	objectID containerID == 0 ifTrue: [^self transactionReferenceAt: objectID index].
-	^(transactionObject := self transactionObjectAt: objectID) isNil 
-		ifFalse: [transactionObject value]
+	objects ifNil: [ 
+		OmniBase signalError: 'Transaction was already aborted' ].
+	objectID containerID == 0 ifTrue: [ 
+		^ self transactionReferenceAt: objectID index ].
+	^ (transactionObject := self transactionObjectAt: objectID) 
+		  ifNotNil: [ transactionObject value ]
 ]
 
 { #category : #private }
-ODBTransaction >> objectHolderAt: objectID [ 
+ODBTransaction >> objectHolderAt: objectID [
+
 	"Private - Answer object holder at objectID."
 
-	| trObj |
-	^(trObj := self cachedTransactionObjectAt: objectID) isNil 
-		ifFalse: [trObj objectHolder]
-		ifTrue: [dbConnection objectManager holderAt: objectID]
+	^ (self cachedTransactionObjectAt: objectID)
+		  ifNil: [ dbConnection objectManager holderAt: objectID ]
+		  ifNotNil: [ :trObj | trObj objectHolder ]
 ]
 
 { #category : #'private/unclassified' }
@@ -284,28 +288,31 @@ ODBTransaction >> oldHolders [
 ]
 
 { #category : #private }
-ODBTransaction >> referenceAt: objectID [ 
+ODBTransaction >> referenceAt: objectID [
+
 	"Private - Answer reference at objectID. If object is already loaded, answer its value."
 
 	| refObj |
-	objectID containerID == 0 ifTrue: [^self transactionReferenceAt: objectID index].
-	(refObj := self cachedTransactionObjectAt: objectID) isNil ifFalse: [^refObj value].
+	objectID containerID == 0 ifTrue: [ 
+		^ self transactionReferenceAt: objectID index ].
+	(refObj := self cachedTransactionObjectAt: objectID) ifNotNil: [ 
+		^ refObj value ].
 	refObj := ODBReference new.
-	^refObj odbSetLoader: (ODBDemandLoader new 
-				setTransaction: self
-				objectID: objectID
-				proxyObject: refObj)
+	^ refObj odbSetLoader: (ODBDemandLoader new
+			   setTransaction: self
+			   objectID: objectID
+			   proxyObject: refObj)
 ]
 
 { #category : #public }
 ODBTransaction >> root [
+
 	"Answer the database root object. Root object represents an entry point into the database.
 	Only objects that are being referenced from the root object will remain after the garbage
 	collection on the database."
 
-	| rootObjectHolder |
-	^(rootObjectHolder := self objectAt: (ODBObjectID containerID: 1 index: 1)) isNil 
-		ifFalse: [rootObjectHolder rootObject]
+	^ (self objectAt: (ODBObjectID containerID: 1 index: 1)) ifNotNil: [ 
+		  :rootObjectHolder | rootObjectHolder rootObject ]
 ]
 
 { #category : #private }
