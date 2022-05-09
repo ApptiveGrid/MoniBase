@@ -86,7 +86,6 @@ ODBClassDescription >> isVariable [
 
 { #category : #public }
 ODBClassDescription >> loadFromStream: aStream [
-
 	name := aStream getString.
 	bytes := aStream getBoolean.
 	variable := aStream getBoolean.
@@ -126,21 +125,20 @@ ODBClassDescription >> saveOnStream: aStream [
 
 { #category : #private }
 ODBClassDescription >> updateVariableOrder [
+
 	| realNames |
-	class := Smalltalk at: name asSymbol ifAbsent: [].
+	class := Smalltalk at: name asSymbol ifAbsent: nil.
 	varOrder := Array new: instVarNames size.
-	class isNil 
-		ifTrue: [varOrder atAllPut: 1]
-		ifFalse: 
-			[realNames := class allInstVarNames.
-			1 to: varOrder size
-				do: 
-					[:i | 
-					(varOrder at: i put: (realNames indexOf: (instVarNames at: i))) = 0 
-						ifTrue: [varOrder at: i put: realNames size + 1]].
-			instVarIndexes := Array new: instVarNames size.
-			1 to: instVarNames size
-				do: [:i | instVarIndexes at: i put: (class allInstVarNames indexOf: (instVarNames at: i))]]
+	class ifNil: [ varOrder atAllPut: 1 ] ifNotNil: [ 
+		realNames := class allInstVarNames.
+		1 to: varOrder size do: [ :i | 
+			(varOrder at: i put: (realNames indexOf: (instVarNames at: i))) = 0 
+				ifTrue: [ varOrder at: i put: realNames size + 1 ] ].
+		instVarIndexes := Array new: instVarNames size.
+		1 to: instVarNames size do: [ :i | 
+			instVarIndexes
+				at: i
+				put: (class allInstVarNames indexOf: (instVarNames at: i)) ] ]
 ]
 
 { #category : #public }

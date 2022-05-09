@@ -3,11 +3,11 @@ Extension { #name : #SystemDictionary }
 { #category : #'*omnibase' }
 SystemDictionary >> odbBasicSerialize: serializer [
 
-	serializer stream putByte: 19
+	serializer stream nextPutSystemDictionary: self
 ]
 
 { #category : #'*omnibase' }
 SystemDictionary >> odbSerialize: serializer [
-
-	serializer stream putByte: 19
+	"registration not needed, as we always return the current Smalltalk globals value on read"
+	self odbBasicSerialize: serializer
 ]

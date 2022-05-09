@@ -27,6 +27,18 @@ ByteArray >> odbAsInteger [
 	^result
 ]
 
+{ #category : #'*OmniBase' }
+ByteArray >> odbBasicSerialize: serializer [
+	self class == ByteArray ifFalse: [ ^ super odbBasicSerialize: serializer ].
+	serializer stream nextPutByteArray: self
+]
+
+{ #category : #'*OmniBase' }
+ByteArray class >> odbDeserialize: deserializer [
+
+	^ deserializer stream nextByteArray: self
+]
+
 { #category : #'*omnibase' }
 ByteArray >> odbIsLessOrEqualTo: aByteArray [
 

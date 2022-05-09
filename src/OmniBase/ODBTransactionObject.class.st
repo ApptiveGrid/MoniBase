@@ -5,15 +5,27 @@ Class {
 		'transaction',
 		'lockObject',
 		'holder',
-		'dataBaseObject'
+		'dataBaseObject',
+		'changed'
 	],
 	#category : #'OmniBase-Transaction'
 }
+
+{ #category : #testing }
+ODBTransactionObject class >> isAbstract [
+		
+	^ self == ODBTransactionObject
+]
 
 { #category : #accessing }
 ODBTransactionObject >> dataBaseObject [
 
     ^dataBaseObject
+]
+
+{ #category : #testing }
+ODBTransactionObject >> isChanged [
+	^ self subclassResponsibility
 ]
 
 { #category : #'transaction processing' }
@@ -23,7 +35,7 @@ ODBTransactionObject >> isLocked [
     ^lockObject notNil
 ]
 
-{ #category : #accessing }
+{ #category : #testing }
 ODBTransactionObject >> isODBTransactionObject [
 
     ^true
@@ -31,38 +43,39 @@ ODBTransactionObject >> isODBTransactionObject [
 
 { #category : #public }
 ODBTransactionObject >> lock [
+
 	"Lock receiver."
 
 	| lockID lockObj |
-	lockObject isNil 
-		ifTrue: 
-			[
-			(transaction hasForeignLockFor: self) ifTrue: [ ^ false ].
-			(lockID := transaction lockID) isNil ifTrue: [^false].
-			transaction isGlobalLocked ifTrue: [^true].
-			lockObj := ODBObjectLock new.
-			lockObj
-				objectID: holder objectID;
-				lockID: lockID.
-			transaction addLock: lockObj.
-			(holder lockWith: lockID) 
-				ifFalse: 
-					[transaction removeLock: lockObj.
-					^false].
-			lockObject := lockObj].
-	^true
+	lockObject ifNil: [ 
+		(transaction hasForeignLockFor: self) ifTrue: [ ^ false ].
+		(lockID := transaction lockID) ifNil: [ ^ false ].
+		transaction isGlobalLocked ifTrue: [ ^ true ].
+		lockObj := ODBObjectLock new.
+		lockObj
+			objectID: holder objectID;
+			lockID: lockID.
+		transaction addLock: lockObj.
+		(holder lockWith: lockID) ifFalse: [ 
+			transaction removeLock: lockObj.
+			^ false ].
+		lockObject := lockObj ].
+	^ true
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 ODBTransactionObject >> lockRegistryKey [
-	^ self objectID lockRegistryKey 
+	^ self objectID lockRegistryKey
 ]
 
 { #category : #public }
 ODBTransactionObject >> objectChanged [
 	"This message is sent from transaction the first time it is marked as dirty."
+]
 
-	
+{ #category : #public }
+ODBTransactionObject >> objectCommitted [
+	^ self subclassResponsibility
 ]
 
 { #category : #accessing }
@@ -80,15 +93,18 @@ ODBTransactionObject >> objectID [
 { #category : #public }
 ODBTransactionObject >> objectLoaded [
 	"Sent to transaction object when it is loaded into transaction."
-
-	
 ]
 
 { #category : #public }
 ODBTransactionObject >> objectStored [
 	"Sent to transaction object when it is stored for the first time."
+]
 
-	
+{ #category : #printing }
+ODBTransactionObject >> printOn: aStream [ 
+	super printOn: aStream.
+	aStream << ' '.
+	holder objectID printOn: aStream
 ]
 
 { #category : #initialization }
@@ -128,15 +144,9 @@ ODBTransactionObject >> transaction [
 ODBTransactionObject >> unlock [
 	"Unlock receiver."
 
-	lockObject isNil 
-		ifFalse: 
-			[(holder unlockWith: lockObject lockID) ifFalse: [^false].
-			transaction removeLock: lockObject.
-			lockObject := nil].
-	^true
-]
-
-{ #category : #accessing }
-ODBTransactionObject >> value [
-        "Answer object represented by receiver. Default <self>."
+	lockObject ifNotNil: [ 
+		(holder unlockWith: lockObject lockID) ifFalse: [ ^ false ].
+		transaction removeLock: lockObject.
+		lockObject := nil ].
+	^ true
 ]

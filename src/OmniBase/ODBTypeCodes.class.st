@@ -2,7 +2,6 @@ Class {
 	#name : #ODBTypeCodes,
 	#superclass : #SharedPool,
 	#classVars : [
-		'ODB8ByteFloatCode',
 		'ODBArrayCode',
 		'ODBAssociationCode',
 		'ODBByteArrayCode',
@@ -29,9 +28,11 @@ Class {
 		'ODBMinusThreeCode',
 		'ODBMinusTwo',
 		'ODBNilCode',
+		'ODBODBIdentityDictionaryCode',
 		'ODBOrderedCollectionCode',
 		'ODBPersistentDictionaryCode',
 		'ODBProcessSchedulerCode',
+		'ODBScaledDecimalCode',
 		'ODBSmallFloat64Code',
 		'ODBSmallPositiveIntegerBaseCode',
 		'ODBSmallStringBaseCode',
@@ -44,41 +45,22 @@ Class {
 		'ODBUndefinedObjectCode',
 		'ODBWideStringCode'
 	],
-	#classInstVars : [
-		'encoder'
-	],
 	#category : #'OmniBase-Base'
 }
-
-{ #category : #accessing }
-ODBTypeCodes class >> encoder [
-	^encoder
-]
-
-{ #category : #accessing }
-ODBTypeCodes class >> encoding: aString [
-	encoder := aString asZnCharacterEncoder
-]
 
 { #category : #initialization }
 ODBTypeCodes class >> initialize [ 
 	self initializeTypeCodes.
-	self initializeEncoding
-]
-
-{ #category : #initialization }
-ODBTypeCodes class >> initializeEncoding [
-	"see ZnUTFEncoder knownEncodingIdentifiers for all supported encodings"
-	self encoding: #utf8
+	ODBEncodingStream initializeTypeCodeMapping
 ]
 
 { #category : #initialization }
 ODBTypeCodes class >> initializeTypeCodes [
-	"1 .. 3"
+	<script>
+	"1 .. 3" 
 	ODBInternalReference := 4.
 	ODBExternalReferenceCode := 5.
 	"6 .. 10"
-	ODBNilCode := 10.
 	ODBLargePositiveIntegerCode := 11.
 	ODBLargeNegativeIntegerCode := 12.
 	ODBCharacterCode := 13.
@@ -110,8 +92,9 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBFloatValue1 := 42.
 	ODBFloatAsIntegerCode := 43.
 	ODBFloatAs100IntegerCode := 44.
-	ODB8ByteFloatCode := 45. "should be scaled decimal"
-	ODBFloatCode := 46.
+	ODBScaledDecimalCode := 45.
+	"legacy ?"
+	"ODBFloatCode := 46."
 	ODBSmallFloat64Code := 47.
 	"integers <= 16 are stored with code 50 + number"
 	ODBSmallPositiveIntegerBaseCode := 50. 
@@ -124,6 +107,7 @@ ODBTypeCodes class >> initializeTypeCodes [
 	"70 .. 79 small strings"
 	ODBByteArrayCode := 80.
 	ODBOrderedCollectionCode := 81.
+	ODBODBIdentityDictionaryCode := 82.
 	ODBPersistentDictionaryCode := 83.
 	ODBTransactionCode := 84.
 ]

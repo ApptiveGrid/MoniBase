@@ -2,12 +2,12 @@ Class {
 	#name : #OmniBase,
 	#superclass : #Object,
 	#instVars : [
-		'rootDir',
 		'objectManager',
 		'classManager',
 		'clientManager',
 		'transactionManager',
-		'lockRegistry'
+		'lockRegistry',
+		'path'
 	],
 	#classInstVars : [
 		'currentTransaction',
@@ -20,17 +20,18 @@ Class {
 
 { #category : #private }
 OmniBase class >> add: anOmniBase [
-		"Private - Registers an opened database session."
 
-	sessions isNil ifTrue: [sessions := OrderedCollection new].
-	sessions add: anOmniBase.
+	"Private - Registers an opened database session."
+
+	sessions ifNil: [ sessions := OrderedCollection new ].
+	sessions add: anOmniBase
 ]
 
 { #category : #accessing }
 OmniBase class >> allSessions [
-		"Answers a collection of all opened database sessions."
+	"Answers a collection of all opened database sessions."
 
-	^sessions
+	^ sessions
 ]
 
 { #category : #public }
@@ -44,13 +45,16 @@ OmniBase class >> checkpoint [
 
 { #category : #public }
 OmniBase class >> closeAll [
+
 	"Closes all opened database sessions. Do not use this method if you're using
 	the Source Tracking System for development since it will also close its connection
 	to the source code repository."
 
-	sessions isNil ifTrue: [^false].
-	sessions copy 
-		do: [:each | [each close] on: Error do: [:er | sessions remove: each ifAbsent: []]]
+	sessions ifNil: [ ^ false ].
+	sessions copy do: [ :each | 
+		[ each close ]
+			on: Error
+			do: [ :er | sessions remove: each ifAbsent: [  ] ] ]
 ]
 
 { #category : #public }
@@ -115,7 +119,7 @@ OmniBase class >> getCurrentAndSet: anOmniBaseTransaction for: aProcess [
 
 	| previousTxn |
 	processToTransactionMutex critical: 
-			[previousTxn := processToTransactionDict at: aProcess ifAbsent: [].
+			[previousTxn := processToTransactionDict at: aProcess ifAbsent: nil.
 			processToTransactionDict at: aProcess put: anOmniBaseTransaction].
 	^previousTxn
 ]
@@ -181,9 +185,9 @@ OmniBase class >> objectAt: anODBObjectID [
 ]
 
 { #category : #creating }
-OmniBase class >> openOn: dirName [
+OmniBase class >> openOn: path [
 
-	^self new openOn: dirName
+	^self new openOn: path
 ]
 
 { #category : #private }
@@ -210,7 +214,6 @@ OmniBase class >> reset [
 	processToTransactionDict := IdentityDictionary new.
 	processToTransactionMutex := Semaphore forMutualExclusion.
 	currentTransaction := nil.
-	
 ]
 
 { #category : #public }
@@ -251,7 +254,6 @@ OmniBase class >> warningMessage: aString [
 
 { #category : #private }
 OmniBase >> classManager [
-
 	^ classManager ifNil: [ classManager := self classManagerClass new ]
 ]
 
@@ -275,24 +277,24 @@ OmniBase >> clientManagerClass [
 
 { #category : #public }
 OmniBase >> close [
-	clientManager notNil 
-		ifTrue: 
+	clientManager 
+		ifNotNil: 
 			[clientManager close.
 			clientManager := nil].
-	classManager notNil 
-		ifTrue: 
+	classManager 
+		ifNotNil: 
 			[classManager close.
 			classManager := nil].
-	objectManager notNil 
-		ifTrue: 
+	objectManager 
+		ifNotNil: 
 			[objectManager close.
 			objectManager := nil].
-	transactionManager notNil 
-		ifTrue: 
+	transactionManager 
+		ifNotNil: 
 			[transactionManager close.
 			transactionManager := nil].
-	lockRegistry notNil 
-		ifTrue: [ 
+	lockRegistry 
+		ifNotNil: [ 
 			lockRegistry checkRemoval.
 			lockRegistry := nil ].
 	self class remove: self
@@ -309,7 +311,7 @@ OmniBase >> containerNamed: aName [
 OmniBase >> containerNamed: aName ifAbsent: aBlock [
 	"Answers the container the receiver locates at aName or executes aBlock if not found."
 
-	^ objectManager containerNamed: aName ifAbsent: aBlock 
+	^ objectManager containerNamed: aName ifAbsent: aBlock
 ]
 
 { #category : #public }
@@ -324,32 +326,27 @@ OmniBase >> createBackupOn: newDirectoryName [
 ]
 
 { #category : #public }
-OmniBase >> createOn: dirName [ 
+OmniBase >> createOn: aStringOrFileReference [ 
 	"Create new database. If a database already exists signal error."
 
 	
-	[rootDir := dirName.
-	(ODBFileStream directoryExists: rootDir) 
-		ifFalse: [ODBFileStream directoryCreate: rootDir].
+	[
+	path := aStringOrFileReference asFileReference.
+	(path exists) 
+		ifFalse: [ path ensureCreateDirectory ].
 	classManager := self classManager createOn: self.
 	objectManager := self objectManager createOn: self.
 	transactionManager := self transactionManager createOn: self.
 	clientManager := self clientManager createOn: self.
-	lockRegistry := ODBLockRegistry forPath: dirName.
+	lockRegistry := ODBLockRegistry forPath: path.
 	self opened.
-	clientManager localClient makeRootObject] 
-			ifCurtailed: [self close]
-]
-
-{ #category : #accessing }
-OmniBase >> dirName [
-
-    ^rootDir
+	clientManager localClient makeRootObject ] 
+		ifCurtailed: [self close]
 ]
 
 { #category : #accessing }
 OmniBase >> existsContainerNamed: aString [
-        "Answer <true> if container named aString exists."
+    "Answer <true> if container named aString exists."
 
     objectManager containerNamed: aString ifAbsent: [^false].
     ^true
@@ -357,7 +354,7 @@ OmniBase >> existsContainerNamed: aString [
 
 { #category : #public }
 OmniBase >> freeDiskSpace [
-	self odbToDo.
+	self flag: #odbToDo.
 	^1024 * 1024 * 1024
 ]
 
@@ -368,7 +365,6 @@ OmniBase >> garbageCollect [
 		- remove all objects which are not referenced from the database root
 		- compact all container files and remove old object versions
 	B-tree dictionaries will not be compacted."
-
 	(ODBGarbageCollector new)
 		reorganizeDictionaries: false;
 		reorganizeIndexSets: false;
@@ -433,22 +429,10 @@ OmniBase >> newBTreeIdentityDictionary [
 ]
 
 { #category : #accessing }
-OmniBase >> newBTreeIndexDictionary: keySize [
-
-    ^self class newBTreeIndexDictionary: keySize
-]
-
-{ #category : #accessing }
 OmniBase >> newContainer: aString [
-        "Create new container named aString."
+	"Create new container named aString."
 
     ^objectManager containerNew: aString
-]
-
-{ #category : #accessing }
-OmniBase >> newPersistentDictionary [
-
-	^self class newPersistentDictionary
 ]
 
 { #category : #public }
@@ -486,8 +470,7 @@ OmniBase >> numberOfClients [
 { #category : #private }
 OmniBase >> objectManager [
 
-	^ objectManager ifNil: [ 
-		objectManager := self objectManagerClass new ]
+	^ objectManager ifNil: [ objectManager := self objectManagerClass new ]
 ]
 
 { #category : #public }
@@ -506,20 +489,20 @@ OmniBase >> odbObjectID [
 ]
 
 { #category : #public }
-OmniBase >> openOn: dirName [ 
+OmniBase >> openOn: aStringOrFileReference [ 
 	"Open an already existing database environment. 
 	Trigger an exception if failed."
 
 	
-	[rootDir := dirName.
+	[path := aStringOrFileReference asFileReference.
 	classManager := self classManager openOn: self.
 	objectManager := self objectManager openOn: self.
 	transactionManager := self transactionManager openOn: self.
 	clientManager := self clientManager openOn: self.
-	lockRegistry := ODBLockRegistry forPath: dirName.
+	lockRegistry := ODBLockRegistry forPath: path.
 	self opened] 
 			ifCurtailed: [self close].
-	self freeDiskSpace < 5242880 ifTrue: [OmniBase warningMessage: 'Low disk space !']
+	self freeDiskSpace < 5242880 ifTrue: [self class warningMessage: 'Low disk space !']
 ]
 
 { #category : #private }
@@ -534,12 +517,20 @@ OmniBase >> opened [
 			do: [:er | #odbTODO]
 ]
 
-{ #category : #public }
+{ #category : #accessing }
+OmniBase >> path [
+
+    ^ path
+]
+
+{ #category : #printing }
 OmniBase >> printOn: aStream [
 
 	super printOn: aStream.
-	
-	aStream nextPutAll: '(',self hash asString,')'
+
+	aStream nextPutAll: '('.
+	self hash printOn: aStream.
+	aStream nextPutAll: ')'
 ]
 
 { #category : #public }
@@ -567,8 +558,7 @@ OmniBase >> setUserDescription: aString [
 { #category : #private }
 OmniBase >> transactionManager [
 
-    ^ transactionManager ifNil: [ 
-		transactionManager := self transactionManagerClass new ]
+	^ transactionManager ifNil: [ transactionManager := self transactionManagerClass new ]
 ]
 
 { #category : #public }

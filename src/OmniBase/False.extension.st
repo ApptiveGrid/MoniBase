@@ -3,7 +3,7 @@ Extension { #name : #False }
 { #category : #'*omnibase' }
 False >> odbBasicSerialize: serializer [
 
-	serializer stream putByte: 16
+	serializer stream nextPutFalse: self
 ]
 
 { #category : #'*omnibase' }
@@ -14,6 +14,6 @@ False >> odbObjectID [
 
 { #category : #'*omnibase' }
 False >> odbSerialize: serializer [
-
-	serializer stream putByte: 16
+	"registration not needed, as we always return the one false on read"
+	self odbBasicSerialize: serializer
 ]

@@ -7,6 +7,13 @@ Class {
 	#category : #'OmniBase-Tests'
 }
 
+{ #category : #running }
+ODBSerializationTest >> setUp [
+	super setUp.
+	ODBDeserializer init.
+	ODBTypeCodes initialize.
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationArray [
 	| object serialized materialized |
@@ -29,6 +36,16 @@ ODBSerializationTest >> testSerializationAssociation [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationBlockClosure [
+	| object serialized materialized |
+	object := [].
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: #'FullBlockClosure can''t be stored!'
 ]
 
 { #category : #tests }
@@ -58,15 +75,61 @@ ODBSerializationTest >> testSerializationBoxedFloat64 [
 	self assert: float class equals: BoxedFloat64.
 	serialized := ODBSerializer serializeToBytes: float.
 	self 
-		assert: serialized 
-		equals: #[0 1 12 66 111 120 101 100 70 108 111 97 116 54 52 1 1 0 1 0 0 0 2 1 2 128 128 224 234 6 0].
-	"self assert: (serialized at: 7) equals: ODBFloatCode."
-	self flag: #TODO. "Implement BoxedFloat Serialisation and de-serialization"
+		assert: serialized
+		equals: #[0 0 0 0 0 0 40 128 128 224 234 6 0].
+	self assert: (serialized at: 7) equals: ODBFloatCode.
 	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
-	self assert: float class equals: BoxedFloat64.
-	self assert: materialized equals: 2.45227231256843e-45
+	self assert: materialized class equals: BoxedFloat64.
+	self assert: materialized equals: 2.45227231256843e-45.
+	
+	"can we still de-serialize the old way before we used ODBFloatCode?"
+	materialized := ODBDeserializer deserializeFromBytes: 
+	#[0 1 12 66 111 120 101 100 70 108 111 97 116 54 52 1 1 0 1 0 0 0 2 1 2 128 128 224 234 6 0].
+	self assert: materialized class equals: BoxedFloat64.
+	self assert: materialized equals: 2.45227231256843e-45.
+]
 
+{ #category : #tests }
+ODBSerializationTest >> testSerializationBoxedFloat64Infinity [
+	| float serialized materialized |
+	float := Float infinity.
+	self assert: float class equals: BoxedFloat64.
+	serialized := ODBSerializer serializeToBytes: float.
+	self 
+		assert: serialized
+		equals: #[0 0 0 0 0 0 40 128 128 128 255 15 0].
+	self assert: (serialized at: 7) equals: ODBFloatCode.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: BoxedFloat64.
+	self assert: materialized equals: float.
+	
+	float := Float negativeInfinity.
+	self assert: float class equals: BoxedFloat64.
+	serialized := ODBSerializer serializeToBytes: float.
+	self 
+		assert: serialized
+		equals: #[0 0 0 0 0 0 40 128 128 128 255 31 0].
+	self assert: (serialized at: 7) equals: ODBFloatCode.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: BoxedFloat64.
+	self assert: materialized equals: float
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationBoxedFloat64Twice [
+	| float object serialized materialized |
+	
+	"try to serialize an object that references twice the boxed floats"
+	float := 2.45227231256843e-45.
+	object := {float . float}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: object first identicalTo: object second.
+	self assert: materialized equals: object.
 ]
 
 { #category : #tests }
@@ -74,9 +137,8 @@ ODBSerializationTest >> testSerializationByteArray [
 	| object serialized materialized |
 	object := #[1 2 3 5].
 	serialized := ODBSerializer serializeToBytes: object.
-	self assert: serialized equals: #[0 1 9 66 121 116 101 65 114 114 97 121 1 1 0 1 0 0 0 2 1 4 1 2 3 5].
-	"self assert: (serialized at: 7) equals: ODBByteArrayCode."
-	self flag: #TODO. "Implement ByteArray Serialisation and de-serialization"
+	self assert: serialized equals: #[0 0 1 0 0 0 80 4 1 2 3 5].
+	self assert: (serialized at: 7) equals: ODBByteArrayCode.
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
@@ -100,6 +162,27 @@ ODBSerializationTest >> testSerializationCharacter [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationCharacterTwice [
+	| object character serialized materialized |
+	character := $a.
+	object := {character. character}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: object first identicalTo: object second.
+	self assert: materialized equals: object.
+
+	character := 16rF600 asCharacter.
+	object := {character. character}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: object first identicalTo: object second.
+	self assert: materialized equals: object.
+
 ]
 
 { #category : #tests }
@@ -151,11 +234,30 @@ ODBSerializationTest >> testSerializationFraction [
 ]
 
 { #category : #tests }
+ODBSerializationTest >> testSerializationFractionTwice [
+	| fraction object serialized materialized |
+	fraction := 1/2.
+	object := {fraction . fraction}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: object first identicalTo: object second.
+	self assert: materialized equals: object
+]
+
+{ #category : #tests }
 ODBSerializationTest >> testSerializationIdentityDictionary [
 	| object serialized materialized |
 	object := IdentityDictionary newFrom: { #test->2 . #now->4 }.
 	serialized := ODBSerializer serializeToBytes: object.
-	self assert: serialized equals: #[0 0 1 0 0 0 38 2 18 4 116 101 115 116 52 18 3 110 111 119 54].
+	self assert: (
+			serialized = 
+			"the order of association in the dict is different between Pharo9 and Pharo10, no idea why"
+			#[0 0 1 0 0 0 38 2 18 3 110 111 119 54 18 4 116 101 115 116 52] 
+		or: [ 
+			serialized = 
+			#[0 0 1 0 0 0 38 2 18 4 116 101 115 116 52 18 3 110 111 119 54]]).
+
 	self assert: (serialized at: 7) equals: ODBIdentityDictionaryCode.
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
@@ -202,6 +304,33 @@ ODBSerializationTest >> testSerializationLargeInteger [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationLargeIntegerTwice [
+
+	| object integer serialized materialized |
+	
+	"LargeInteger"
+	
+	integer := SmallInteger maxVal + 1.
+	object := {integer. integer}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: object first identicalTo: object second.
+	self assert: materialized equals: object.
+	
+	"SmallInteger"
+	
+	integer := SmallInteger minVal - 1.
+	object := {integer. integer}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: object first identicalTo: object second.
+	self assert: materialized equals: object.
+	
 ]
 
 { #category : #tests }
@@ -269,6 +398,16 @@ ODBSerializationTest >> testSerializationOrderedCollection [
 ]
 
 { #category : #tests }
+ODBSerializationTest >> testSerializationProcess [
+	| object serialized materialized |
+	object := Processor activeProcess.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: #'Process can''t be stored!'
+]
+
+{ #category : #tests }
 ODBSerializationTest >> testSerializationProcessSchedulerCode [
 	| object serialized materialized |
 	object := Processor.
@@ -278,6 +417,23 @@ ODBSerializationTest >> testSerializationProcessSchedulerCode [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: Processor
+]
+
+{ #category : #'tests-hashed' }
+ODBSerializationTest >> testSerializationSet [
+	"Set uses the hash to find elements, this might be identity, which changes"
+
+	| set object2 serialized materialized |
+
+	set := Set new.
+	object2 := ODBTestClass1 new.
+	set add: object2.
+
+	serialized := ODBSerializer serializeToBytes: set.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self deny: materialized anyOne identicalTo: set.
+	self assert: (materialized includes:  materialized anyOne)
 ]
 
 { #category : #tests }
@@ -290,12 +446,18 @@ ODBSerializationTest >> testSerializationSmallFloat64 [
 	self assert: (serialized at: 7) equals: ODBSmallFloat64Code.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized class equals: SmallFloat64.
-	self assert: materialized equals: 1.11
-
+	self assert: materialized identicalTo: float.
+	
+	"We changed serialization fixing https://github.com/ApptiveGrid/MoniBase/issues/22
+	This checks that we can load the old serialized Floats after the change"
+	
+	materialized := ODBDeserializer 
+		deserializeFromBytes: #[0 0 1 0 0 0 47 158 138 142 255 7 134 215 199 194 11].
+	self assert: materialized identicalTo: float.
 ]
 
 { #category : #tests }
-ODBSerializationTest >> testSerializationSmallFloat64Two [
+ODBSerializationTest >> testSerializationSmallFloat64Twice [
 	| object serialized materialized |
 	
 	"try to serialize an object that references twice the same small floats"
@@ -304,13 +466,43 @@ ODBSerializationTest >> testSerializationSmallFloat64Two [
 	serialized := ODBSerializer serializeToBytes: object.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
+	self assert: materialized first identicalTo: object first.
+	self assert: materialized second identicalTo: object second.
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationSmallFloat64ZeroAndOne [
+	| float serialized materialized |
 	
-	"We changed serialization fixing https://github.com/ApptiveGrid/MoniBase/issues/22
-	This checks that we can load the old serialized Floats after the change"
+	float := 0.0.
+	self assert: float class equals: SmallFloat64.
+	serialized := ODBSerializer serializeToBytes: float.
+	self assert: serialized equals: #[0 0 0 0 0 0 47 0 0].
+	self assert: (serialized at: 7) equals: ODBSmallFloat64Code.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: SmallFloat64.
+	self assert: materialized identicalTo: float.
+	self assert: materialized identicalTo: Float zero.
 	
-	materialized := ODBDeserializer 
-		deserializeFromBytes: #[0 0 1 0 0 0 47 158 138 142 255 7 134 215 199 194 11].
-	self assert: materialized equals: object first.
+	float := 1.0.
+	self assert: float class equals: SmallFloat64.
+	serialized := ODBSerializer serializeToBytes: float.
+	self assert: serialized equals: #[0 0 0 0 0 0 47 128 128 128 255 7 0].
+	self assert: (serialized at: 7) equals: ODBSmallFloat64Code.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: SmallFloat64.
+	self assert: materialized identicalTo: float.
+	self assert: materialized identicalTo: Float one.
+	
+	float := -0.0.
+	self assert: float class equals: SmallFloat64.
+	serialized := ODBSerializer serializeToBytes: float.
+	self assert: serialized equals: #[0 0 0 0 0 0 47 128 128 128 128 16 0].
+	self assert: (serialized at: 7) equals: ODBSmallFloat64Code.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: SmallFloat64.
+	self assert: materialized identicalTo: float.
+	self assert: materialized identicalTo: Float negativeZero.
 ]
 
 { #category : #tests }
@@ -336,10 +528,46 @@ ODBSerializationTest >> testSerializationSmallInteger [
 		self assert: ((ODBSerializer serializeToBytes: -2) at: 7) equals: ODBMinusTwo.
 ]
 
+{ #category : #'tests-encoded-subclasses' }
+ODBSerializationTest >> testSerializationSortedCollection [
+	"SortedCollection is a subclass of OrderedCollection, make sure it works"
+
+	| object serialized materialized |
+	object := SortedCollection new.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	"this is NOT serialized using ODBOrderedCollectionCode"
+	self deny: (serialized at: 7) equals: ODBOrderedCollectionCode.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationString [ 
 	| string serialized materialized |
-	"First Small String with size < 10"
+	
+	"empty String"
+	
+	string := ''.
+	serialized := ODBSerializer serializeToBytes: string.
+	self assert: serialized equals:#[0 0 1 0 0 0 70].
+	self assert: (serialized at: 7) equals: ODBSmallStringBaseCode.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: ''.
+	
+	"Small String with size 1"
+	
+	string := 'h'.
+	serialized := ODBSerializer serializeToBytes: string.
+	self assert: serialized equals:#[0 0 1 0 0 0 71 104].
+	self assert: (serialized at: 7) equals: ODBSmallStringBaseCode + string size.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: 'h'.
+	
+	"Small String with size < 10"
 	
 	string := 'hello'.
 	serialized := ODBSerializer serializeToBytes: string.
@@ -359,6 +587,33 @@ ODBSerializationTest >> testSerializationString [
 	self assert: (serialized at: 7) equals: ODBStringCode.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: string
+]
+
+{ #category : #tests }
+ODBSerializationTest >> testSerializationStringTwice [
+	
+	| object serialized materialized |
+	
+	"try to serialize an object that references twice the string"
+	object := {'h' . 'h'}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	
+
+	object := {'hello' . 'hello'}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	
+
+	object := {'helloWithMoreCharacters' . 'helloWithMoreCharacters'}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
 ]
 
 { #category : #tests }
@@ -383,9 +638,24 @@ ODBSerializationTest >> testSerializationSystemDictionary [
 	self assert: (serialized at: 7) equals: ODBSystemDictionaryCode.
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
-	self flag: #TODO.
-	"this shows that we do not de-serialize the dictionary, but the global Smalltalk binding"
-	self assert: materialized equals: Smalltalk
+	self assertCollection: materialized hasSameElements: Smalltalk globals
+]
+
+{ #category : #'tests-encoded-subclasses' }
+ODBSerializationTest >> testSerializationTTLAssociation [
+	"TTLAssociation is a subclass of Association, make sure it works"
+
+	| object serialized materialized |
+	object := TTLAssociation key: #t value: 1.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	"this is NOT serialized using ODBAssociationCode"
+	self deny: (serialized at: 7) equals: ODBAssociationCode.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: object class.
+	self assert: materialized equals: object
+
 ]
 
 { #category : #tests }
@@ -395,6 +665,25 @@ ODBSerializationTest >> testSerializationTime [
 	serialized := ODBSerializer serializeToBytes: object.
 	self assert: serialized equals: #[0 0 1 0 0 0 33 0].
 	self assert: (serialized at: 7) equals: ODBTimeCode.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object
+]
+
+{ #category : #'tests-encoded-subclasses' }
+ODBSerializationTest >> testSerializationUUID [
+	"UUID is a subclass of ByteArray, make sure it works"
+
+	| object serialized materialized |
+	object := UUID fromString: 'e42b03f8-3e9a-0d00-862e-bf1701b4bbce'.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	"this is NOT serialized using ODBByteArrayCode"
+	self deny: (serialized at: 7) equals: ODBByteArrayCode.
+	
+	self 
+		assert: serialized
+		equals: #[0 1 4 85 85 73 68 1 1 0 1 0 0 0 2 1 16 228 43 3 248 62 154 13 0 134 46 191 23 1 180 187 206].
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
@@ -412,6 +701,21 @@ ODBSerializationTest >> testSerializationUndefindedObject [
 	self assert: materialized equals: nil
 ]
 
+{ #category : #'tests-encoded-subclasses' }
+ODBSerializationTest >> testSerializationWeakArray [
+	"WeakArray is a subclass of Array, make sure it works"
+
+	| object serialized materialized |
+	object := WeakArray new.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	"this is NOT serialized using ODBOrderedCollectionCode"
+	self deny: (serialized at: 7) equals: ODBArrayCode.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationWideStringUTF16 [
 
@@ -422,7 +726,7 @@ ODBSerializationTest >> testSerializationWideStringUTF16 [
 		with: 16r0155 asCharacter
 		with: 16r0111 asCharacter.
 	self assert: string isWideString.
-	ODBTypeCodes encoding: #utf16.
+	ODBEncodingStream characterEncoding: #utf16.
 	
 	serialized := ODBSerializer serializeToBytes: string.
 	self assert: serialized equals: #[0 0 1 0 0 0 36 8 246 0 246 3 1 85 1 17].
@@ -430,7 +734,6 @@ ODBSerializationTest >> testSerializationWideStringUTF16 [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: string.
-
 ]
 
 { #category : #tests }
@@ -443,7 +746,7 @@ ODBSerializationTest >> testSerializationWideStringUTF32 [
 		with: 16r0155 asCharacter
 		with: 16r0111 asCharacter.
 	self assert: string isWideString.
-	ODBTypeCodes encoding: #utf32.
+	ODBEncodingStream characterEncoding: #utf32.
 	
 	serialized := ODBSerializer serializeToBytes: string.
 	self assert: serialized equals: #[0 0 1 0 0 0 36 16 0 0 246 0 0 0 246 3 0 0 1 85 0 0 1 17].
@@ -451,7 +754,6 @@ ODBSerializationTest >> testSerializationWideStringUTF32 [
 	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: string.
-
 ]
 
 { #category : #tests }
@@ -463,7 +765,7 @@ ODBSerializationTest >> testSerializationWideStringUTF8 [
 		with: 16r0155 asCharacter
 		with: 16r0111 asCharacter.
 	self assert: string isWideString.
-	ODBTypeCodes encoding: #utf8.
+	ODBEncodingStream characterEncoding: #utf8.
 	
 	serialized := ODBSerializer serializeToBytes: string.
 	self assert: serialized equals: #[0 0 1 0 0 0 36 10 239 152 128 239 152 131 197 149 196 145].
@@ -471,5 +773,4 @@ ODBSerializationTest >> testSerializationWideStringUTF8 [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: string.
-
 ]

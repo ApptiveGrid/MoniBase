@@ -2,26 +2,18 @@ Extension { #name : #Character }
 
 { #category : #'*omnibase' }
 Character >> odbBasicSerialize: serializer [
-
-	self asInteger < 256 ifTrue: [
-		serializer stream putByte: 13; putChar: self.
-		^self
-	].
-	serializer stream putByte: 29; putWord: self asInteger
+	self class == Character ifFalse: [ ^ super odbBasicSerialize: serializer ].
+	serializer stream nextPutCharacter: self
 ]
 
 { #category : #'*omnibase' }
 Character class >> odbDeserialize: deserializer [
 
-	^deserializer stream getChar
+	^ deserializer stream nextCharacter
 ]
 
 { #category : #'*omnibase' }
 Character >> odbSerialize: serializer [
-
-	self asInteger < 256 ifTrue: [
-		serializer stream putByte: 13; putChar: self.
-		^self
-	].
-	serializer stream putByte: 29; putWord: self asInteger
+	"Immediate object, no registration needed"
+	self odbBasicSerialize: serializer
 ]

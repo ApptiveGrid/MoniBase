@@ -1,9 +1,6 @@
 Class {
 	#name : #ODBSerializedObject,
 	#superclass : #ODBTransactionObject,
-	#instVars : [
-		'changed'
-	],
 	#category : #'OmniBase-Transaction'
 }
 
@@ -14,10 +11,10 @@ ODBSerializedObject >> commit: serializer [
 	| change bytes referenceManager newHolder classID |
 	changed == true ifFalse: [^self].
 	referenceManager := ODBReferenceManager new.
-	bytes := ODBMemoryWriteStream new.
+	bytes := ODBMemoryStreamWrapper write.
 	serializer 
 		serialize: dataBaseObject odbObject
-		onStream: bytes
+		onStream: (ODBEncodingStream on: bytes)
 		referenceManager: referenceManager
 		classManager: transaction environment classManager.
 	bytes := referenceManager asBytesWith: bytes asByteArray.

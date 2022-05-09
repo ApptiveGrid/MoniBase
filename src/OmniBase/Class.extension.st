@@ -1,15 +1,21 @@
 Extension { #name : #Class }
 
 { #category : #'*omnibase' }
+Class >> odbBasicSerialize: serializer [
+
+	serializer stream nextPutClass: self
+]
+
+{ #category : #'*omnibase' }
 Class class >> odbDeserialize: deserializer [
 
-	^Smalltalk at: deserializer stream getString asSymbol ifAbsent: []
+	^ deserializer stream nextClass
 ]
 
 { #category : #'*omnibase' }
 Class >> odbSerialize: serializer [
-
-	serializer stream putByte: 26; putString: name asString
+	"registration not needed, as we always return the current class on read"
+	self odbBasicSerialize: serializer
 ]
 
 { #category : #'*omnibase' }

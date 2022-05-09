@@ -8,17 +8,6 @@ Class {
 	#category : #'OmniBase-Files'
 }
 
-{ #category : #'public/create/open/close' }
-ODBVersionControlFile >> createOn: aString [
-
-    stream := ODBFileStream createOn: aString
-                            createMode: ODBFileStream createModeCreateAlways
-                            accessMode: ODBFileStream accessModeReadWrite
-                            shareMode: ODBFileStream shareModeShareAll
-                            cacheMode: ODBFileStream cacheModeAtomicWrite.
-    ^self writeHeader
-]
-
 { #category : #public }
 ODBVersionControlFile >> created [
 	"Create version table for maximum 255 clients."
@@ -54,18 +43,6 @@ ODBVersionControlFile >> getNewVersionNumberFor: clientID [
 	^versionNumber
 ]
 
-{ #category : #'public/create/open/close' }
-ODBVersionControlFile >> openOn: aString [
-        "Open transaction file. Signal an error if failed."
-
-    stream := ODBFileStream createOn: aString
-                            createMode: ODBFileStream createModeOpenExisting
-                            accessMode: ODBFileStream accessModeReadWrite
-                            shareMode: ODBFileStream shareModeShareAll
-                            cacheMode: ODBFileStream cacheModeAtomicWrite.
-    ^self compareHeader
-]
-
 { #category : #public }
 ODBVersionControlFile >> removeCommittingFor: clientID [ 
 	"Remove committing version number for clientID."
@@ -81,16 +58,18 @@ ODBVersionControlFile >> versionDescriptor [
 	"Answer read versionDescriptor."
 
 	| versionTable size time |
-	(versionDescriptor isNil 
-		or: [((time := Time millisecondClockValue) - lastReadTime) abs > 500]) 
-			ifTrue: 
-				[size := (ODBClientTable maxClients + 1) * 4.
-				versionTable := ByteArray new: size.
-				stream 
-					atPosition: self headerLength
-					getBytesFor: versionTable
-					len: size.
-				lastReadTime := time isNil ifTrue: [Time millisecondClockValue] ifFalse: [time].
-				versionDescriptor := ODBVersionDescriptor new fromVersionTable: versionTable].
-	^versionDescriptor
+	(versionDescriptor isNil or: [ 
+		 ((time := Time millisecondClockValue) - lastReadTime) abs > 500 ]) 
+		ifTrue: [ 
+			size := ODBClientTable maxClients + 1 * 4.
+			versionTable := ByteArray new: size.
+			stream
+				atPosition: self headerLength
+				getBytesFor: versionTable
+				len: size.
+			lastReadTime := time
+				                ifNil: [ Time millisecondClockValue ]
+				                ifNotNil: [ time ].
+			versionDescriptor := ODBVersionDescriptor new fromVersionTable: versionTable ].
+	^ versionDescriptor
 ]

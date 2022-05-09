@@ -21,14 +21,15 @@ ODBTransactionFile >> collectLockClassIDsFrom: rootClass to: aDictionary [
 ]
 
 { #category : #'public/create/open/close' }
-ODBTransactionFile >> createOn: aString [
+ODBTransactionFile >> createOn: aFileReference [
 
-    stream := ODBFileStream createOn: aString
-                            createMode: ODBFileStream createModeCreateAlways
-                            accessMode: ODBFileStream accessModeReadWrite
-                            shareMode: ODBFileStream shareModeShareRead
-                            cacheMode: ODBFileStream cacheModeAtomicWrite.
-    ^self writeHeader
+	stream := self 
+		newCodecStreamOn: aFileReference 
+		using: [ :s | 
+			s 
+				truncate: 0;
+				shareModeRead  ].
+	^ self writeHeader
 ]
 
 { #category : #'private/unclassified' }
@@ -64,7 +65,7 @@ ODBTransactionFile >> lockAdd: anODBLock [
 	locks add: anODBLock.
 	lockPositions add: newLockPosition.
 	anODBLock lockIndex: locks size.
-	(mStream := ODBMemoryWriteStream new) putByte: 0.
+	(mStream := ODBMemoryStreamWrapper write) putByte: 0.
 	anODBLock storeOnStream: mStream.
 	mStream putByte: 0.
 	stream
@@ -98,15 +99,13 @@ ODBTransactionFile >> locks [
 ]
 
 { #category : #'public/create/open/close' }
-ODBTransactionFile >> openOn: aString [
-        "Open transaction file. Signal an error if failed."
-
-    stream := ODBFileStream createOn: aString
-                            createMode: ODBFileStream createModeOpenExisting
-                            accessMode: ODBFileStream accessModeReadWrite
-                            shareMode: ODBFileStream shareModeShareRead
-                            cacheMode: ODBFileStream cacheModeAtomicWrite.
-    ^self compareHeader
+ODBTransactionFile >> openOn: aFileReference [
+	"Open transaction file. Signal an error if failed."
+	
+	stream := self 
+		newCodecStreamOn: aFileReference  
+		using: [ :s | s shareModeRead ].
+    ^ self compareHeader
 ]
 
 { #category : #public }

@@ -8,15 +8,15 @@ Class {
 }
 
 { #category : #public }
-ODBGarbageCollectorFile >> createOn: aString [ 
+ODBGarbageCollectorFile >> createOn: aFileReference [ 
 	"Create garbage collector file. Answer <nil> if failed."
-
-	stream := ODBFileStream 
-				createOn: aString
-				createMode: ODBFileStream createModeCreateNew
-				accessMode: ODBFileStream accessModeReadWrite
-				shareMode: ODBFileStream shareModeShareRead.
-	^self writeHeader
+	stream := self 
+		newCodecStreamOn: aFileReference 
+		using: [ :s | 
+			s 
+				truncate: 0;
+				shareModeRead ].
+	^ self writeHeader
 ]
 
 { #category : #public }
@@ -50,15 +50,13 @@ ODBGarbageCollectorFile >> newObjectSpace: anInteger [
 ]
 
 { #category : #public }
-ODBGarbageCollectorFile >> openOn: aString [ 
+ODBGarbageCollectorFile >> openOn: aFileReference [ 
 	"Open garbage collector file. Signal an error if failed."
-
-	stream := ODBFileStream 
-				createOn: aString
-				createMode: ODBFileStream createModeOpenExisting
-				accessMode: ODBFileStream accessModeReadWrite
-				shareMode: ODBFileStream shareModeShareRead.
-	^self compareHeader
+	
+	stream := self 
+		newCodecStreamOn: aFileReference  
+		using: [ :s | s shareModeRead ].
+	^ self compareHeader
 ]
 
 { #category : #public }

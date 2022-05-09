@@ -2,12 +2,12 @@ Extension { #name : #ProcessorScheduler }
 
 { #category : #'*omnibase' }
 ProcessorScheduler >> odbBasicSerialize: serializer [
-
-	serializer stream putByte: 22
+	self class == ProcessorScheduler ifFalse: [ ^ super odbBasicSerialize: serializer ].
+	serializer stream nextPutProcessorScheduler: self
 ]
 
 { #category : #'*omnibase' }
 ProcessorScheduler >> odbSerialize: serializer [
-
-	serializer stream putByte: 22
+	"registration not needed, as we always return the current Process value on read"
+	self odbBasicSerialize: serializer
 ]

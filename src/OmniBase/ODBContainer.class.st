@@ -104,12 +104,12 @@ ODBContainer >> createOn: aString [
 
 { #category : #private }
 ODBContainer >> dataFileNameA [
-	^path , ODBFileStream pathSeparatorString , 'objects.a'
+	^ path / 'objects.a'
 ]
 
 { #category : #private }
 ODBContainer >> dataFileNameB [
-	^path , ODBFileStream pathSeparatorString , 'objects.b'
+	^ path / 'objects.b'
 ]
 
 { #category : #public }
@@ -117,19 +117,11 @@ ODBContainer >> dataFileSize [
 	^activeDataFile stream size
 ]
 
-{ #category : #'private-accessing' }
-ODBContainer >> dirName [
-
-	"Private - Needed by database objects that are creating their own files."
-
-	^ path
-]
-
 { #category : #private }
 ODBContainer >> fileNameFromIndex: anInteger [ 
 	"Private - Answer object file name from index."
 
-	^path , ODBFileStream pathSeparatorString , anInteger printString , '.btr'
+	^ path / anInteger printString , 'btr'
 ]
 
 { #category : #public }
@@ -140,7 +132,9 @@ ODBContainer >> flushBytes [
 	queueSize == 0 ifTrue: [^self].
 	self lockDataFile.
 	stream := activeDataFile stream.
-	pos := stream setToEnd.
+	pos := stream 
+		setToEnd;
+		position.
 	buf := ByteArray new: queueSize.
 	bufPos := 0.
 	byteStorageQueue do: 
@@ -188,7 +182,7 @@ ODBContainer >> indexFile [
 
 { #category : #private }
 ODBContainer >> indexFileName [
-	^path , ODBFileStream pathSeparatorString , 'objects.idx'
+	^ path / 'objects.idx'
 ]
 
 { #category : #public }
@@ -342,6 +336,11 @@ ODBContainer >> openOn: aString [
 			ifCurtailed: [self close]
 ]
 
+{ #category : #accessing }
+ODBContainer >> path [ 
+	^ path
+]
+
 { #category : #'byte storage management' }
 ODBContainer >> removeHolderAt: index [
 
@@ -356,7 +355,7 @@ ODBContainer >> removeObjectFile: anInteger [
 			dbFiles removeKey: anInteger.
 			file ifNotNil:[
 				file close].
-			ODBFileStream remove: (self fileNameFromIndex: anInteger)]
+			(self fileNameFromIndex: anInteger) delete ]
 ]
 
 { #category : #private }

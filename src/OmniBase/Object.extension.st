@@ -9,7 +9,16 @@ Object >> asBtreeKeyOfSize: keySize [
 { #category : #'*omnibase' }
 Object >> commit: serializer [
 	"do nothing"
+]
 
+{ #category : #'*OmniBase' }
+Object >> isEqualTo: anObject [ 
+	"Answer true if anObject is equal to receiver. For ODBReferences we first check if it is
+	the same object because identity implies equality and no need to load the object in order
+	to decide."
+
+	anObject isODBReference ifTrue: [^anObject isIdenticalTo: self].
+	^self = anObject
 ]
 
 { #category : #'*omnibase' }
@@ -63,18 +72,17 @@ Object >> makePersistent [
 		ifFalse:[OmniBase currentTransaction makePersistent: self in: ARCurrentContainer value]"
 	
 	OmniBase currentTransaction makePersistent: self
-		
 ]
 
 { #category : #'*omnibase' }
 Object >> markDirty [
-	| t |
-	(t := OmniBase currentTransactionOrNil) isNil 
-		ifTrue: 
-			[(t := self odbGetTransaction) isNil 
-				ifTrue: 
-					[OmniBase signalError: 'Can not mark object as dirty. Transaction context is unknown. ']].
-	t markDirty: self
+
+	| transaction |
+	(transaction := OmniBase currentTransactionOrNil) ifNil: [ 
+		(transaction := self odbGetTransaction) ifNil: [ 
+			OmniBase signalError:
+				'Can not mark object as dirty. Transaction context is unknown. ' ] ].
+	transaction markDirty: self
 ]
 
 { #category : #'*omnibase' }
@@ -88,8 +96,6 @@ Object >> odbAboutToCommitIn: anOmniBaseTransaction [
 	"Sent before transaction writes changes to the database (right before commit).
 	In this method you can use transaction the same way as usual.
 	Do nothing by default."
-
-	
 ]
 
 { #category : #'*omnibase' }
@@ -98,7 +104,7 @@ Object >> odbBasicSerialize: serializer [
 	| stream classInfo instSize |
 	classInfo := serializer registerClass: self class.
 	stream := serializer stream.
-	classInfo isVariable ifTrue: [ stream putPositiveInteger: self basicSize ].
+	classInfo isVariable ifTrue: [ stream primitive putPositiveInteger: self basicSize ].
 	classInfo isBytes ifFalse: [
 		classInfo instVarIndexes do: [:i | (self instVarAt: i) odbSerialize: serializer ].
 		instSize := self class instSize.
@@ -108,7 +114,7 @@ Object >> odbBasicSerialize: serializer [
 	"variable - need to check whether we have bytes or words"
 	self class isWords
 		ifFalse: [ stream putBytesFrom: self len: self basicSize ]
-		ifTrue: [1 to: self basicSize do: [:i | stream putInteger: (self basicAt: i)]].
+		ifTrue: [1 to: self basicSize do: [:i | stream primitive putInteger: (self basicAt: i)]].
 ]
 
 { #category : #'*omnibase' }
@@ -167,7 +173,7 @@ Object class >> odbLoadVariables: deserializer classInfo: classInfo [
 	| stream order iSize object basicSize varArray |
 	stream := deserializer stream.
 	classInfo isVariable
-		ifTrue: [ object := self basicNew: (basicSize := stream getPositiveInteger) ]
+		ifTrue: [ object := self basicNew: (basicSize := stream primitive getPositiveInteger) ]
 		ifFalse: [
 			basicSize := 0.
 			object := self basicNew.
@@ -175,7 +181,7 @@ Object class >> odbLoadVariables: deserializer classInfo: classInfo [
 	deserializer register: object.
 	classInfo isBytes ifTrue: [
 		classInfo realClass isWords 
-			ifTrue: [1 to: basicSize do: [:i | object basicAt: i put: stream getInteger]]
+			ifTrue: [1 to: basicSize do: [:i | object basicAt: i put: stream primitive getInteger]]
 			ifFalse: [stream getBytesFor: object len: basicSize].
 		^object
 	].
@@ -224,14 +230,4 @@ Object >> odbResolve [
 Object >> odbSerialize: serializer [ 
 	(serializer register: self) ifTrue: [^self].
 	self odbBasicSerialize: serializer
-]
-
-{ #category : #'*omnibase' }
-Object >> odbToDo [
-		"See implementors to list all methods in OmniBase which need to be improved."
-]
-
-{ #category : #'*omnibase' }
-Object >> signalError: aString [
-	self error: aString
 ]

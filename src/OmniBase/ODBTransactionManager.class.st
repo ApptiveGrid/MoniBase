@@ -75,7 +75,7 @@ ODBTransactionManager >> oldHolders [
 
 { #category : #private }
 ODBTransactionManager >> oldHoldersFileName [
-	^dbConnection dirName , ODBFileStream pathSeparatorString , 'omnibase.log'
+	^ dbConnection path / 'omnibase.log'
 ]
 
 { #category : #public }
@@ -90,14 +90,12 @@ ODBTransactionManager >> openOn: anOmniBase [
 ]
 
 { #category : #public }
-ODBTransactionManager >> transactionAborted: aTransaction [ 
-	"Discard version descriptor. Default do nothing."
+ODBTransactionManager >> transactionAborted: aTransaction [
 
-	committingTransaction == aTransaction 
-		ifTrue: 
-			[versionControl removeCommittingFor: aTransaction client clientID.
-			committingTransaction := nil.
-			serializingTransactionsSemaphore signal]
+	committingTransaction == aTransaction ifFalse: [ ^ self ].
+	versionControl removeCommittingFor: aTransaction client clientID.
+	committingTransaction := nil.
+	serializingTransactionsSemaphore signal
 ]
 
 { #category : #public }
@@ -112,29 +110,32 @@ ODBTransactionManager >> transactionCommitBegin: aTransaction [
 ]
 
 { #category : #public }
-ODBTransactionManager >> transactionCommitEnd: aTransaction [ 
-	committingTransaction == aTransaction 
-		ifTrue: 
-			[versionControl removeCommittingFor: aTransaction client clientID.
-			committingTransaction := nil.
-			serializingTransactionsSemaphore signal]
+ODBTransactionManager >> transactionCommitEnd: aTransaction [
+
+	committingTransaction == aTransaction ifFalse: [ ^ self ].
+	versionControl removeCommittingFor: aTransaction client clientID.
+	committingTransaction := nil.
+	serializingTransactionsSemaphore signal
 ]
 
 { #category : #public }
-ODBTransactionManager >> transactionReferenceAt: index [ 
-	^(index > transactionReferences size or: [index = 0]) 
-		ifFalse: [transactionReferences at: index]
+ODBTransactionManager >> transactionReferenceAt: index [
+
+	^ (index > transactionReferences size or: [ index = 0 ])
+		  ifTrue: [ nil ]
+		  ifFalse: [ transactionReferences at: index ]
 ]
 
 { #category : #'public/unclassified' }
 ODBTransactionManager >> transactionStart: aTransaction [
-                "Set transaction version descriptor upon transaction start."
-        aTransaction versionDescriptor: versionControl versionDescriptor copy
+	"Set transaction version descriptor upon transaction start."
+
+	aTransaction versionDescriptor: versionControl versionDescriptor copy
 ]
 
 { #category : #private }
 ODBTransactionManager >> vcFileName [
-	^dbConnection dirName , ODBFileStream pathSeparatorString , 'omnibase.vcf'
+	^ dbConnection path / 'omnibase.vcf'
 ]
 
 { #category : #private }

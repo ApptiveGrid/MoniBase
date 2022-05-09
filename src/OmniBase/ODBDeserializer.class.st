@@ -20,20 +20,20 @@ Class {
 
 { #category : #private }
 ODBDeserializer class >> classArray [
-	classArray isNil ifTrue: [self init].
-	^classArray
+
+	^classArray ifNil: [ self init ]
 ]
 
 { #category : #public }
 ODBDeserializer class >> deserializeFromBytes: aByteArray [ 
 	| memoryStream classManager |
-	memoryStream := ODBMemoryReadStream new createOn: aByteArray.
+	memoryStream := ODBMemoryStreamWrapper on: aByteArray readStream.
 	memoryStream getPositiveInteger = 0 
 		ifFalse: [self error: 'External references not defined'].
 	classManager := ODBClassManagerForSerialization new.
 	classManager loadFromStream: memoryStream.
 	^self new 
-		deserializeFrom: memoryStream
+		deserializeFrom:  (ODBEncodingStream on: memoryStream)
 		referenceManager: nil
 		classManager: classManager
 ]
@@ -41,7 +41,7 @@ ODBDeserializer class >> deserializeFromBytes: aByteArray [
 { #category : #public }
 ODBDeserializer class >> deserializeFromBytes: aByteArray externalReferencesLoaderBlock: aBlock [ 
 	| memoryStream referenceManager classManager |
-	memoryStream := ODBMemoryReadStream new createOn: aByteArray.
+	memoryStream := ODBMemoryStreamWrapper on: aByteArray readStream.
 	referenceManager := ODBReferenceManager new.
 	referenceManager loadFromStream: memoryStream externalReferencesLoaderBlock: aBlock.
 	classManager := ODBClassManagerForSerialization new.
@@ -72,7 +72,7 @@ ODBDeserializer class >> init [
 		at: 16 put: false;
 		at: 17 put: Message;
 		at: 18 put: Symbol;
-		at: 19 put: Smalltalk;
+		at: 19 put: Smalltalk globals;
 		at: 20 put: MessageSend;
 		at: 22 put: Processor;
 		at: 26 put: Class;
@@ -91,8 +91,7 @@ ODBDeserializer class >> init [
 		at: 42 put: (ODBCopyValue value: 1.0);
 		at: 43 put: ODBFloatAsInteger;
 		at: 44 put: ODBFloatAs100Integer;
-		at: 45 put: ODB8ByteFloat;
-		"should be ScaledDecimal but Squeak has not support for ScaledDecimal class, e.g. 1.0s does not work"
+		at: 45 put: ScaledDecimal;
 		at: 46 put: Float;
 		at: 47 put: SmallFloat64;
 	
@@ -131,20 +130,16 @@ ODBDeserializer class >> init [
 		at: 82 put: ODBIdentityDictionary;
 		at: 83 put: ODBPersistentDictionary;
 		at: 84 put: ODBTransaction.
-]
-
-{ #category : #public }
-ODBDeserializer class >> registerDeserializer: anObject withId: anInteger [ 
-	self classArray at: anInteger put: anObject
+	^classArray
 ]
 
 { #category : #public }
 ODBDeserializer >> deserializeFrom: aStream referenceManager: aReferenceManager classManager: aClassManager [ 
-	stream := aStream.
+	stream := aStream readerWriter: self.
 	referenceManager := aReferenceManager.
 	classManager := aClassManager.
 	classArray := self class classArray.
-	objects := Array new: stream getLong.
+	objects := Array new: stream primitive getLong.
 	classes := OrderedCollection new: 30.
 	counter := 0.
 	classesCounter := 0.
@@ -156,12 +151,12 @@ ODBDeserializer >> deserializeFrom: aStream
 	referenceManager: aReferenceManager
 	transaction: aTransaction [
 
-	stream := aStream.
+	stream := aStream readerWriter: self.
 	referenceManager := aReferenceManager.
 	classManager := aTransaction environment classManager.
 	transaction := aTransaction.
 	classArray := self class classArray.
-	objects := Array new: stream getLong.
+	objects := Array new: stream primitive getLong.
 	classes := OrderedCollection new: 30.
 	counter := 0.
 	classesCounter := 0.
@@ -171,14 +166,14 @@ ODBDeserializer >> deserializeFrom: aStream
 { #category : #private }
 ODBDeserializer >> existingObject [
 
-	^objects at: stream getPositiveInteger
+	^ objects at: stream primitive getPositiveInteger
 ]
 
 { #category : #private }
 ODBDeserializer >> loadError [
 	| id |
-	stream position: stream position - 1.
-	id := stream getByte.
+	stream primitive position: stream primitive position - 1.
+	id := stream primitive getByte.
 	OmniBase 
 		signalError: 'OmniBase deserializer: Unknown serialization id (' , id printString , ')'
 ]
@@ -186,13 +181,13 @@ ODBDeserializer >> loadError [
 { #category : #private }
 ODBDeserializer >> loadReference [
 
-	^self register: (referenceManager referenceAt: stream getPositiveInteger)
+	^self register: (referenceManager referenceAt: stream primitive getPositiveInteger)
 ]
 
 { #category : #private }
 ODBDeserializer >> newObjectNewClass [
 	| classInfo |
-	classInfo := classManager classDescriptionAt: stream getPositiveInteger.
+	classInfo := classManager classDescriptionAt: stream primitive getPositiveInteger.
 	classesCounter := classesCounter + 1.
 	classes add: classInfo.
 	^classInfo realClass odbLoadVariables: self classInfo: classInfo
@@ -202,7 +197,7 @@ ODBDeserializer >> newObjectNewClass [
 ODBDeserializer >> newObjectOldClass [
 
 	| classInfo |
-	^(classInfo := classes at: stream getPositiveInteger) realClass
+	^(classInfo := classes at: stream primitive getPositiveInteger) realClass
 		odbLoadVariables: self
 		classInfo: classInfo
 ]
@@ -210,7 +205,7 @@ ODBDeserializer >> newObjectOldClass [
 { #category : #private }
 ODBDeserializer >> odbNextObject [
 
-	^(classArray at: stream getByte) odbDeserialize: self
+	^(classArray at: stream primitive getByte) odbDeserialize: self
 ]
 
 { #category : #private }

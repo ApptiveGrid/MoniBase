@@ -2,7 +2,6 @@ Class {
 	#name : #ODBBTreeIndexDictionary,
 	#superclass : #ODBTransactionObject,
 	#instVars : [
-		'changed',
 		'currentKey',
 		'keySize'
 	],
@@ -19,7 +18,7 @@ ODBBTreeIndexDictionary class >> createWithKeyLength: keyLength [
 { #category : #accessing }
 ODBBTreeIndexDictionary >> at: aKey [
 
-    ^self at: aKey ifAbsent: []
+    ^self at: aKey ifAbsent: nil
 ]
 
 { #category : #public }
@@ -374,7 +373,7 @@ ODBBTreeIndexDictionary >> isChanged [
 
 { #category : #public }
 ODBBTreeIndexDictionary >> isEmpty [
-	^self size = 0
+	^self getFirst isNil
 ]
 
 { #category : #private }
@@ -391,7 +390,7 @@ ODBBTreeIndexDictionary >> keyLength [
 { #category : #accessing }
 ODBBTreeIndexDictionary >> keySize [ 
 
-	^ keySize 
+	^ keySize
 ]
 
 { #category : #private }
@@ -529,6 +528,14 @@ ODBBTreeIndexDictionary >> selectKeysStartingWith: aString [
 		to: toKey
 		do: [:key | keys add: key].
 	^keys
+]
+
+{ #category : #accessing }
+ODBBTreeIndexDictionary >> size [
+	"NOTE: Better do not use this!
+	All objects will be loaded in one transaction at once.
+	Do not use this method if there are a lot of objects in the dictionary since this could block your image for some time."
+	^self values size
 ]
 
 { #category : #public }

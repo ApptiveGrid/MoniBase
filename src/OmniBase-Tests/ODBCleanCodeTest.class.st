@@ -7,6 +7,25 @@ Class {
 	#category : #'OmniBase-Tests'
 }
 
+{ #category : #cleanup }
+ODBCleanCodeTest class >> cleanupWhiteSpaceTrimRight [
+	<script>
+	| badCases |
+	badCases := (OmniBase package methods, self package methods) select: [ :each | 
+		            each sourceCode trimRight size ~= each sourceCode size ].
+
+	badCases do: [ :each | 
+		| refactoring classOrTrait |
+		classOrTrait := each traitSource
+			                ifNil: [ each methodClass ]
+			                ifNotNil: [ each traitSource innerClass ].
+		refactoring := RBAddMethodChange
+			               compile: each sourceCode trimRight
+			               in: classOrTrait
+			               for: nil.
+		refactoring execute ]
+]
+
 { #category : #tests }
 ODBCleanCodeTest >> testNoDuplicatedMethodInHierarchy [
 	"There should be no methods in the hierachy that are already in a superclass"
@@ -30,13 +49,40 @@ ODBCleanCodeTest >> testNoUncategorizedMethods [
 
 	| violating classes |
 	classes := OmniBase package definedClasses
-	           , OmniBase package definedClasses collect: [ :each | each classSide ].
+	           , (OmniBase package definedClasses collect: [ :each | each classSide ]).
 
 	violating := classes select: [ :class | 
 		             class protocols includes: #'as yet unclassified' ].
 	self
 		assert: violating isEmpty
 		description: 'the following classes have uncategorized methods: ', violating asString
+]
+
+{ #category : #tests }
+ODBCleanCodeTest >> testNoUnimplementedCalls [
+
+	| remaining |
+	remaining := OmniBase package methods select: [ :meth | 
+		             | ignored |
+		             ignored := (meth pragmaAt: #ignoreUnimplementedCalls:)
+			                        ifNotNil: [ :pragma | pragma argumentAt: 1 ]
+			                        ifNil: [ #(  ) ].
+		             meth messages anySatisfy: [ :m | 
+			             m isSelectorSymbol not and: [ 
+				             (ignored includes: m) not ] ] ].
+	
+	self assert: remaining isEmpty description: ('the following methods send selectors that do not exist', remaining asString)
+]
+
+{ #category : #tests }
+ODBCleanCodeTest >> testNoUnusedClasses [
+	"Fail if there are Classes that are not used. They should either be tested or deleted.
+	(check how to override #isUsed for cases where classes are discovered reflectively)"
+	| found  |
+	found := OmniBase package definedClasses reject: [ :class | class isUsed].
+	self 
+		assert: found isEmpty 
+		description: ('the following classes are unused: ', found asString)
 ]
 
 { #category : #tests }

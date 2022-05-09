@@ -19,7 +19,7 @@ Class {
 { #category : #private }
 ODBTransaction class >> odbDeserialize: deserializer [
 
-	^deserializer transaction
+	^ deserializer transaction
 ]
 
 { #category : #public }
@@ -29,7 +29,6 @@ ODBTransaction >> abort [
 	transactionManager isNil ifFalse: [transactionManager critical: [self basicAbort]].
 
 	self triggerEvent: #finishedTransaction: with: self.
-
 ]
 
 { #category : #public }
@@ -262,7 +261,7 @@ ODBTransaction >> objectHolderAt: objectID [
 { #category : #'private/unclassified' }
 ODBTransaction >> odbBasicSerialize: serializer [
 
-	serializer stream putByte: 84
+	serializer stream nextPutTransaction: self
 ]
 
 { #category : #'private/unclassified' }
@@ -273,8 +272,8 @@ ODBTransaction >> odbObjectID [
 
 { #category : #'private/unclassified' }
 ODBTransaction >> odbSerialize: serializer [
-
-	serializer stream putByte: 84
+	self flag: #TODO. "Explain why we do not need to register?"
+	self odbBasicSerialize: serializer
 ]
 
 { #category : #'private/accessing' }

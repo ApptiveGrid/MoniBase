@@ -92,10 +92,8 @@ ODBDatabaseTest >> testEquality [
 { #category : #tests }
 ODBDatabaseTest >> testGC [
 	"Test garbage collection"
-
 	self timeLimit: 1 minute. 
-	self shouldnt: [db garbageCollect] raise: Error.
-
+	"self shouldnt: [" db garbageCollect "] raise: Error."
 ]
 
 { #category : #tests }
@@ -107,6 +105,7 @@ ODBDatabaseTest >> testIdentity [
 	str := 'This is a string'.
 	coll1 add: str.
 	coll2 add: str.
+
 	OmniBase root at: 'one' put: coll1.
 	OmniBase root at: 'two' put: coll2. ]
 		evaluateAndCommitIn: db newTransaction.
@@ -143,7 +142,6 @@ ODBDatabaseTest >> testMakePersistent [
 	txn := db newTransaction.
 	txn makePersistent: self collection.
 	txn commit.
-	
 ]
 
 { #category : #tests }
@@ -164,7 +162,6 @@ ODBDatabaseTest >> testNewPersistent [
 ODBDatabaseTest >> testNoClientsAfterCreation [
 
 	self assert: db numberOfClients equals: 0.
-	
 ]
 
 { #category : #tests }
@@ -217,7 +214,6 @@ ODBDatabaseTest >> testOneClientAfterOpening [
 	| client |
 	client := db localClient.
 	self assert: db numberOfClients equals: 1.
-	
 ]
 
 { #category : #tests }
@@ -234,7 +230,6 @@ ODBDatabaseTest >> testPersistTwoObjectsInCluster [
 	
 	self assert: txn changesPackage changes size equals: 1.
 	txn abort.
-	
 ]
 
 { #category : #tests }
@@ -252,7 +247,6 @@ ODBDatabaseTest >> testPersistTwoObjectsSeparate [
 	
 	self assert: txn changesPackage changes size equals: 2.
 	txn abort.
-	
 ]
 
 { #category : #tests }
@@ -270,7 +264,6 @@ ODBDatabaseTest >> testPersistTwoObjectsWithCollectionInCluster [
 	
 	self assert: txn changesPackage changes size equals: 1.
 	txn abort.
-	
 ]
 
 { #category : #tests }
@@ -290,7 +283,6 @@ ODBDatabaseTest >> testPersistTwoObjectsWithCollectionSeparate [
 	
 	self assert: txn changesPackage changes size equals: 2.
 	txn abort.
-	
 ]
 
 { #category : #tests }
@@ -313,7 +305,6 @@ ODBDatabaseTest >> testPersistTwoObjectsWithDictionaryInCluster [
 	
 	self assert: txn changesPackage changes size equals: 2.
 	txn abort.
-	
 ]
 
 { #category : #tests }
@@ -337,5 +328,31 @@ ODBDatabaseTest >> testPersistTwoObjectsWithODBDictionary [
 	
 	self assert: txn changesPackage changes size equals: 3.
 	txn abort.
-	
+]
+
+{ #category : #tests }
+ODBDatabaseTest >> testSetInclusion [
+
+	| obj1 obj2 fromDb1 fromDb2 |
+	[ 
+	obj1 := Set new.
+	obj1 makePersistent.
+	obj2 := ODBTestClass1 new.
+	obj2 makePersistent.
+	obj1 add: obj2.
+
+	OmniBase root at: 'one' put: obj1.
+	OmniBase root at: 'two' put: obj2 ] evaluateAndCommitIn:
+		db newTransaction.
+
+	self assert: (obj1 includes: obj2).
+
+	[ 
+	fromDb1 := OmniBase root at: 'one'.
+	fromDb2 := OmniBase root at: 'two'.
+	"check that we can find the element, we rehash to make sure the
+	Set is in sync with the identity of the contained objects"
+	self assert: (fromDb1 anyOne isIdenticalTo: fromDb2).
+	self assert: (fromDb1 includes: fromDb2 odbResolve) ] evaluateIn:
+		db newReadOnlyTransaction
 ]

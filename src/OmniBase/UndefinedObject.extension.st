@@ -2,8 +2,8 @@ Extension { #name : #UndefinedObject }
 
 { #category : #'*omnibase' }
 UndefinedObject >> odbBasicSerialize: serializer [
-
-	serializer stream putByte: 14
+	self class == UndefinedObject ifFalse: [ ^ super odbBasicSerialize: serializer ].
+	serializer stream nextPutNil: self
 ]
 
 { #category : #'*omnibase' }
@@ -15,7 +15,7 @@ UndefinedObject >> odbDeserialize: deserializer [
 { #category : #'*omnibase' }
 UndefinedObject class >> odbDeserialize: deserializer [
 
-	^nil
+	^ nil
 ]
 
 { #category : #'*omnibase' }
@@ -32,6 +32,6 @@ UndefinedObject >> odbObjectID [
 
 { #category : #'*omnibase' }
 UndefinedObject >> odbSerialize: serializer [
-
-	serializer stream putByte: 14
+	"registration not needed, as we always return the one nil on read"""
+	self odbBasicSerialize: serializer
 ]

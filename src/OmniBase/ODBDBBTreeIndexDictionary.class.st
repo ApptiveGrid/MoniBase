@@ -35,27 +35,30 @@ ODBDBBTreeIndexDictionary >> associationsDo: aBlock [
 ]
 
 { #category : #public }
-ODBDBBTreeIndexDictionary >> at: aKey ifAbsent: aBlock [ 
+ODBDBBTreeIndexDictionary >> at: aKey ifAbsent: aBlock [
+
 	| association |
-	^(association := iterator goToAndGetCurrentAt: ((ByteArray new: iterator keyLength) 
-						replaceFrom: 1
-						to: (aKey size min: iterator keyLength)
-						with: aKey
-						startingAt: 1)) 
-		isNil ifTrue: [aBlock value] ifFalse: [ODBValueHolder createOn: association value]
+	^ (association := iterator goToAndGetCurrentAt:
+		                  ((ByteArray new: iterator keyLength)
+			                   replaceFrom: 1
+			                   to: (aKey size min: iterator keyLength)
+			                   with: aKey
+			                   startingAt: 1))
+		  ifNil: [ aBlock value ]
+		  ifNotNil: [ ODBValueHolder createOn: association value ]
 ]
 
-{ #category : #public }
+{ #category : #accessing }
 ODBDBBTreeIndexDictionary >> at: aKey put: value [ 
 	iterator goTo: aKey put: value contents
 ]
 
-{ #category : #public }
+{ #category : #'public/create/open/close' }
 ODBDBBTreeIndexDictionary >> close [
-	iterator notNil 
-		ifTrue: 
-			[objectHolder container closeObjectFile: objectHolder fileID.
-			iterator := nil]
+
+	iterator ifNil: [ ^ self ].
+	objectHolder container closeObjectFile: objectHolder fileID.
+	iterator := nil
 ]
 
 { #category : #public }
@@ -132,7 +135,7 @@ ODBDBBTreeIndexDictionary >> makeTransactionObject: aTransaction [
 		keySize: iterator keyLength
 ]
 
-{ #category : #public }
+{ #category : #'public/create/open/close' }
 ODBDBBTreeIndexDictionary >> openOn: anObjectHolder [ 
 	objectHolder := anObjectHolder.
 	iterator := objectHolder container openObjectFile: objectHolder fileID
@@ -141,10 +144,10 @@ ODBDBBTreeIndexDictionary >> openOn: anObjectHolder [
 
 { #category : #public }
 ODBDBBTreeIndexDictionary >> remove [
-	iterator isNil 
-		ifFalse: 
-			[objectHolder container removeObjectFile: objectHolder fileID.
-			iterator := nil]
+
+	iterator ifNotNil: [ 
+		objectHolder container removeObjectFile: objectHolder fileID.
+		iterator := nil ]
 ]
 
 { #category : #public }

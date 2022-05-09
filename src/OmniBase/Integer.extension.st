@@ -27,21 +27,12 @@ Integer >> asBtreeKeyOfSize: keySize [
 { #category : #'*omnibase' }
 Integer >> odbBasicSerialize: serializer [
 
-	self < 0 ifTrue: [
-		self > -4 ifTrue: [ ^serializer stream putByte: self + 70 ].
-		^serializer stream putByte: 12; putPositiveInteger: 0 - self.
-	].
-	self < 17 ifTrue: [ ^serializer stream putByte: self + 50 ].
-	serializer stream putByte: 11; putPositiveInteger: self
+	serializer stream nextPutInteger: self
 ]
 
 { #category : #'*omnibase' }
 Integer >> odbSerialize: serializer [
-
-	self < 0 ifTrue: [
-		self > -4 ifTrue: [ ^serializer stream putByte: self + 70 ].
-		^serializer stream putByte: 12; putPositiveInteger: 0 - self.
-	].
-	self < 17 ifTrue: [ ^serializer stream putByte: self + 50 ].
-	serializer stream putByte: 11; putPositiveInteger: self
+	"Small Integers are immediate object, no registration needed"
+	self flag: #TODO. "Explain why we do not register Large Integers?"
+	self odbBasicSerialize: serializer
 ]

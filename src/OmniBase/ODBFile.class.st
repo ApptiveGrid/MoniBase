@@ -14,9 +14,9 @@ ODBFile class >> createOn: aString [
 ]
 
 { #category : #'instance creation' }
-ODBFile class >> openOn: aString [
+ODBFile class >> openOn: aFileReference [
 
-    ^self new openOn: aString
+    ^self new openOn: aFileReference
 ]
 
 { #category : #'create/open/close' }
@@ -43,10 +43,11 @@ ODBFile >> compareHeader [
 ]
 
 { #category : #'create/open/close' }
-ODBFile >> createOn: aString [
-
-    stream := ODBFileStream createOn: aString.
-    ^self writeHeader
+ODBFile >> createOn: aFileReference [
+	stream := self 
+		newCodecStreamOn: aFileReference 
+		using: [ :s | s truncate: 0 ].
+    ^ self writeHeader
 ]
 
 { #category : #private }
@@ -100,23 +101,41 @@ ODBFile >> headerLength [
 ]
 
 { #category : #'create/open/close' }
-ODBFile >> openExclusivelyOn: aString [
+ODBFile >> newCodecStreamOn: aFileReference [
 
-	stream := ODBFileStream openExclusivelyOn: aString.
-	^self compareHeader
+	^ (File named: aFileReference pathString) openForWrite asODBPrimitiveEncodingStream.
 ]
 
 { #category : #'create/open/close' }
-ODBFile >> openOn: aString [
-
-    stream := ODBFileStream openOn: aString.
-    ^self compareHeader
+ODBFile >> newCodecStreamOn: aFileReference using: aBlock [
+	| fileStream |
+	fileStream := (File named: aFileReference pathString) openForWrite.
+	[ aBlock cull: fileStream ]
+		ifCurtailed: [ fileStream close. ^ nil ].
+	^ fileStream asODBPrimitiveEncodingStream.
 ]
 
 { #category : #'create/open/close' }
-ODBFile >> openReadOnlyOn: aString [
+ODBFile >> openExclusivelyOn: aFileReference [
 
-    stream := ODBFileStream openReadOnlyOn: aString.
+	stream := self 
+		newCodecStreamOn: aFileReference  
+		using: [ :s | s shareModeExclusive ].
+	^ self compareHeader
+]
+
+{ #category : #'create/open/close' }
+ODBFile >> openOn: aFileReference [
+
+	stream := self newCodecStreamOn: aFileReference.
+	^ self compareHeader
+]
+
+{ #category : #'create/open/close' }
+ODBFile >> openReadOnlyOn: aFileReference [
+
+	stream := ((File named: aFileReference pathString) openForRead)
+		asODBPrimitiveEncodingStream.
     ^self compareHeader
 ]
 
@@ -157,14 +176,14 @@ ODBFile >> timeOutLength [
 
 { #category : #locking }
 ODBFile >> unlockAdding [
-        "Unlock file for writing at the end of file."
+	"Unlock file for writing at the end of file."
 
     ^stream unlockAt: 0 length: 1
 ]
 
 { #category : #locking }
 ODBFile >> unlockAt: pos length: length [
-        "Unlock file at pos."
+	"Unlock file at pos."
 
     ^stream unlockAt: pos length: length
 ]
@@ -175,8 +194,7 @@ ODBFile >> waitForAddingLock [
 
 	^ self
 		waitForLockAt: 0 
-		length: 1 
-
+		length: 1
 ]
 
 { #category : #public }

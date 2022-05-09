@@ -2,25 +2,18 @@ Extension { #name : #Fraction }
 
 { #category : #'*omnibase' }
 Fraction >> odbBasicSerialize: serializer [
-
-	serializer stream
-		putByte: 39;
-		putInteger: numerator;
-		putInteger: denominator
+	self class == Fraction ifFalse: [ ^ super odbBasicSerialize: serializer ].
+	serializer stream nextPutFraction: self
 ]
 
 { #category : #'*omnibase' }
 Fraction class >> odbDeserialize: deserializer [
 
-	^self numerator: deserializer stream getInteger
-		denominator: deserializer stream getInteger
+	^ deserializer stream nextFraction: self
 ]
 
 { #category : #'*omnibase' }
 Fraction >> odbSerialize: serializer [
-
-	serializer stream
-		putByte: 39;
-		putInteger: numerator;
-		putInteger: denominator
+	self flag: #TODO. "Explain why registration is not needed?"
+	self odbBasicSerialize: serializer
 ]

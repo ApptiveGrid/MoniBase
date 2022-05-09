@@ -23,16 +23,16 @@ Class {
 }
 
 { #category : #'instance creation' }
-ODBLockRegistry class >> forPath: aString [ 
+ODBLockRegistry class >> forPath: aFileReference [ 
 	| path |
 	"locks are managed per omnibase path on disk. So every instance of 
 	OmniBase that access the same path gets the same lock registry to 
 	manage conflicts across transaction boundaries"
-	path := aString asFileReference asAbsolute.
+	path := aFileReference asAbsolute.
 	^ registries 
 		at: path 
 		ifAbsentPut: [ 
-			self new path: path  ] 
+			self new path: path  ]
 ]
 
 { #category : #'class initialization' }
@@ -47,20 +47,19 @@ ODBLockRegistry class >> registeredPaths [
 
 { #category : #accessing }
 ODBLockRegistry class >> registries [ 
-	^ registries 
+	^ registries
 ]
 
 { #category : #removing }
 ODBLockRegistry class >> remove: aRegistry [ 
 	^ registries 
 		removeKey: aRegistry path 
-		ifAbsent: [ ] 
+		ifAbsent: [ ]
 ]
 
 { #category : #removing }
 ODBLockRegistry class >> removePath: aString [ 
-	^ registries removeKey: aString 
-	
+	^ registries removeKey: aString
 ]
 
 { #category : #'class initialization' }
@@ -72,7 +71,7 @@ ODBLockRegistry class >> reset [
 ODBLockRegistry >> addLock: aKeyLock [ 
 	^ self 
 		lockAt: aKeyLock lockRegistryKey 
-		put: aKeyLock 
+		put: aKeyLock
 ]
 
 { #category : #removing }
@@ -138,7 +137,7 @@ ODBLockRegistry >> path [
 
 { #category : #accessing }
 ODBLockRegistry >> path: aFileReference [ 
-	path := aFileReference 
+	path := aFileReference
 ]
 
 { #category : #removing }
@@ -152,7 +151,7 @@ ODBLockRegistry >> removeLock: anODBObjectLock [
 		locks 
 			removeKey: anODBObjectLock lockRegistryKey 
 			ifAbsent: [  ] ].
-	self checkRemoval 
+	self checkRemoval
 ]
 
 { #category : #initialization }
