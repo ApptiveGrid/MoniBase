@@ -1,6 +1,13 @@
 Changes
 =======
 
+2022-05-09 - Release 0.8
+------------------------
+
+- finished refactoring of the underlying stream usage
+- finish unification of type codes in one class with less error-prone usage
+- more tests and edge case testing
+
 2022-04-26 - Release 0.7.1
 --------------------------
 
@@ -9,6 +16,7 @@ Changes
 2022-04-19 - Release 0.7
 ------------------------
 
+- Retired windows support and removed special stream handling modes of windows
 - Refactored handling of streams to reuse pharo streams and less custom protocol. 
 - Delegate de-/encoding calls to a central class removing magic numbers in de-/encoding
 
