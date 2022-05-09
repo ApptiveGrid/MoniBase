@@ -1,6 +1,17 @@
 Changes
 =======
 
+2022-04-26 - Release 0.7.1
+--------------------------
+
+- Fixed missing registration for 1-character string (#122)
+
+2022-04-19 - Release 0.7
+------------------------
+
+- Refactored handling of streams to reuse pharo streams and less custom protocol. 
+- Delegate de-/encoding calls to a central class removing magic numbers in de-/encoding
+
 2022-04-06 - Release 0.6
 ------------------------
 
