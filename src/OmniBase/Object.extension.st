@@ -11,6 +11,16 @@ Object >> commit: serializer [
 	"do nothing"
 ]
 
+{ #category : #'*OmniBase' }
+Object >> isEqualTo: anObject [ 
+	"Answer true if anObject is equal to receiver. For ODBReferences we first check if it is
+	the same object because identity implies equality and no need to load the object in order
+	to decide."
+
+	anObject isODBReference ifTrue: [^anObject isIdenticalTo: self].
+	^self = anObject
+]
+
 { #category : #'*omnibase' }
 Object >> isIdenticalTo: anObject [ 
 	"Answer true if anObject is identical to receiver. This is necessary since with database
