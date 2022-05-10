@@ -235,6 +235,21 @@ ODBSerializationTest >> testSerializationDictionary [
 	self assert: materialized equals: object
 ]
 
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationFixedLayout [
+	| object serialized materialized |
+	"We use Point as an exampe of a class with a FixedLayout but not specially encoded"
+	object := 4@3.
+	
+	self assert: object class classLayout class equals: FixedLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: Point.
+	self assert: materialized class classLayout class equals: FixedLayout.
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationFraction [
 	| object serialized materialized |
