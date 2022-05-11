@@ -99,8 +99,8 @@ ODBClassManager >> classDescriptionAt: anInteger [
 
 	"Answers class at class id anInteger."
 
-	| pos classInfo stream |
-	mutex critical: [ 
+	^ mutex critical: [ 
+		| pos classInfo stream |
 		classes size < anInteger ifFalse: [ 
 			(classInfo := classes at: anInteger) ifNotNil: [ ^ classInfo ] ].
 		(pos := idTable at: anInteger) ifNil: [ 
@@ -110,8 +110,8 @@ ODBClassManager >> classDescriptionAt: anInteger [
 		stream position: pos + 4.
 		classInfo := self classDescriptionFrom: stream.
 		classInfo classID: anInteger.
-		self addClassInfo: classInfo ].
-	^ classInfo
+		self addClassInfo: classInfo.
+		classInfo ]
 ]
 
 { #category : #public }
@@ -211,15 +211,15 @@ ODBClassManager >> register: aClass [
 	"Answer an instance of ODBClassDescription for aClass.
 	ODBClassDescription holds meta information about objects in the database."
 
-	| info pos |
-	mutex critical: [ 
+	^mutex critical: [ 
+		| info pos |
 		(info := self find: aClass) ifNotNil: [ ^ info ].
 		pos := infoFile
 			       at: aClass name
 			       ifAbsent: [ ^ self registerNewClass: aClass ].
 		pos := self loadInfoChainFrom: pos.
 		(info := self find: aClass) ifNotNil: [ ^ info ].
-		^ self registerNewClassVersion: aClass from: pos ]
+		self registerNewClassVersion: aClass from: pos ]
 ]
 
 { #category : #private }

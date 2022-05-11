@@ -182,13 +182,12 @@ ODBBTreeIterator >> goTo: aByteArray put: aValue [
 ]
 
 { #category : #public }
-ODBBTreeIterator >> goToAndGetCurrentAt: aKey [ 
-	| result |
-	mutex critical: 
-			[result := self
-						goTo: aKey;
-						getCurrent].
-	^result
+ODBBTreeIterator >> goToAndGetCurrentAt: aKey [
+
+	^ mutex critical: [ 
+		  self
+			  goTo: aKey;
+			  getCurrent ]
 ]
 
 { #category : #initialization }
