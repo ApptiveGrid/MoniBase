@@ -144,6 +144,21 @@ ODBSerializationTest >> testSerializationByteArray [
 	self assert: materialized equals: object
 ]
 
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationByteLayout [
+	| object serialized materialized |
+	"We use SocketAddress as an exampe of a class with a ByteLayout but not specially encoded"
+	object := #[127 0 0 1] asSocketAddress.
+	
+	self assert: object class classLayout class equals: ByteLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: SocketAddress.
+	self assert: materialized class classLayout class equals: ByteLayout.
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationCharacter [
 	| object serialized materialized |
@@ -218,6 +233,21 @@ ODBSerializationTest >> testSerializationDictionary [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationFixedLayout [
+	| object serialized materialized |
+	"We use Point as an exampe of a class with a FixedLayout but not specially encoded"
+	object := 4@3.
+	
+	self assert: object class classLayout class equals: FixedLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: Point.
+	self assert: materialized class classLayout class equals: FixedLayout.
 ]
 
 { #category : #tests }
@@ -716,6 +746,21 @@ ODBSerializationTest >> testSerializationWeakArray [
 	self assert: materialized equals: object
 ]
 
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationWeakLayout [
+	| object serialized materialized |
+	"We use WeakArray as an exampe of a class with a WeakLayout"
+	object := WeakArray with: 'String'.
+	
+	self assert: object class classLayout class equals: WeakLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: WeakArray.
+	self assert: materialized class classLayout class equals: WeakLayout.
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationWideStringUTF16 [
 
@@ -773,4 +818,19 @@ ODBSerializationTest >> testSerializationWideStringUTF8 [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: string.
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationWordLayout [
+	| object serialized materialized |
+	"We use IntegerArray as an exampe of a class with a WordLayout but not specially encoded"
+	object := IntegerArray new: 5 withAll: 2.
+	
+	self assert: object class classLayout class equals: WordLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: IntegerArray.
+	self assert: materialized class classLayout class equals: WordLayout.
 ]
