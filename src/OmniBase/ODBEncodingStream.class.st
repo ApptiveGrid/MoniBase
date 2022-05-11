@@ -619,18 +619,6 @@ ODBEncodingStream >> readerWriter: anODBSerializer [
 	readerWriter := anODBSerializer
 ]
 
-{ #category : #removing }
-ODBEncodingStream >> remove [
-	"Close and remove receiver. Answer <true> if removed."
-	| file |
-	file := stream name asFileReference.
-	self close.
-	[ file delete ]
-		on: Error 
-		do: [:err | ^ false ].
-	^ true
-]
-
 { #category : #public }
 ODBEncodingStream >> size [
 	^ stream size
