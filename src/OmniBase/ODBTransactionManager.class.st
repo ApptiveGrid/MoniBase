@@ -39,7 +39,7 @@ ODBTransactionManager >> createOn: aDatabase [
 { #category : #'public/accessing' }
 ODBTransactionManager >> critical: aBlock [
 
-	mutex critical: aBlock
+	^mutex critical: aBlock
 ]
 
 { #category : #public }

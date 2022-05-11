@@ -117,11 +117,12 @@ OmniBase class >> getCurrentAndSet: anOmniBaseTransaction for: aProcess [
 	"Private - Associaties anOmniBaseTransaction with aProcess.
 	Answer previous active transaction in case transactions are nested."
 
-	| previousTxn |
-	processToTransactionMutex critical: 
-			[previousTxn := processToTransactionDict at: aProcess ifAbsent: nil.
-			processToTransactionDict at: aProcess put: anOmniBaseTransaction].
-	^previousTxn
+
+	^ processToTransactionMutex critical: 
+			[| previousTxn |
+			previousTxn := processToTransactionDict at: aProcess ifAbsent: nil.
+			processToTransactionDict at: aProcess put: anOmniBaseTransaction.
+			previousTxn]
 ]
 
 { #category : #'class initialization' }
@@ -204,7 +205,7 @@ OmniBase class >> removeFor: aProcess [
 	"Private - Disassociaties a transaction from aProcess."
 
 	processToTransactionMutex 
-		critical: [processToTransactionDict removeKey: aProcess ifAbsent: []]
+		critical: [processToTransactionDict removeKey: aProcess ifAbsent: nil]
 ]
 
 { #category : #'class initialization' }

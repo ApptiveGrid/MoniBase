@@ -78,9 +78,7 @@ ODBTransaction >> cachedObjectAt: objectID [
 ODBTransaction >> cachedTransactionObjectAt: objectID [ 
 	"Private - Answer cached transaction object at objectID."
 
-	| obj |
-	cacheMutex critical: [obj := objects at: objectID].
-	^obj
+	^cacheMutex critical: [objects at: objectID].
 ]
 
 { #category : #'public/accessing' }

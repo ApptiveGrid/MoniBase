@@ -56,16 +56,15 @@ ODBContainer >> close [
 ]
 
 { #category : #public }
-ODBContainer >> closeObjectFile: anInteger [ 
-	"Remove database object file number anInteger from 
-        dictionary of opened files and close it."
+ODBContainer >> closeObjectFile: anInteger [
 
-	| file |
-	dbFilesMutex critical: 
-			[file := dbFiles at: anInteger ifAbsent: [^self].
-			dbFiles removeKey: anInteger.
-			file
-				close]
+	"Remove database object file number anInteger from dictionary of opened files and close it."
+
+	dbFilesMutex critical: [ 
+		| file |
+		file := dbFiles at: anInteger ifAbsent: [ ^ self ].
+		dbFiles removeKey: anInteger.
+		file close ]
 ]
 
 { #category : #public }
@@ -298,15 +297,15 @@ ODBContainer >> objectManager: anODBObjectManager [
 ]
 
 { #category : #public }
-ODBContainer >> onNewObjectFileDo: aBlock [ 
-	| file newIndex |
-	dbFilesMutex critical: 
-			[newIndex := indexFile newObjectFileID.
-			file := aBlock value: newIndex value: (self fileNameFromIndex: newIndex).
-			file notNil 
-				ifTrue: 
-					[dbFiles at: newIndex put: file]].
-	^file
+ODBContainer >> onNewObjectFileDo: aBlock [
+
+	^ dbFilesMutex critical: [ 
+		  | file newIndex |
+		  newIndex := indexFile newObjectFileID.
+		  file := aBlock
+			          value: newIndex
+			          value: (self fileNameFromIndex: newIndex).
+		  ^file ifNotNil: [ dbFiles at: newIndex put: file. file] ]
 ]
 
 { #category : #public }
@@ -349,9 +348,9 @@ ODBContainer >> removeHolderAt: index [
 
 { #category : #private }
 ODBContainer >> removeObjectFile: anInteger [ 
-	| file |
 	dbFilesMutex critical: 
-			[file := dbFiles at: anInteger ifAbsent: [^self].
+			[| file |
+			file := dbFiles at: anInteger ifAbsent: [^self].
 			dbFiles removeKey: anInteger.
 			file ifNotNil:[
 				file close].

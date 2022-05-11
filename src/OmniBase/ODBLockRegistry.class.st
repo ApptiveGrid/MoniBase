@@ -150,7 +150,7 @@ ODBLockRegistry >> removeLock: anODBObjectLock [
 	mutex critical: [
 		locks 
 			removeKey: anODBObjectLock lockRegistryKey 
-			ifAbsent: [  ] ].
+			ifAbsent: nil ].
 	self checkRemoval
 ]
 
