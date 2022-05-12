@@ -21,11 +21,12 @@ ODBFile class >> openOn: aFileReference [
 
 { #category : #'create/open/close' }
 ODBFile >> close [
-        "Close stream associated with receiver."
 
-    stream isNil ifFalse: [
-        stream close.
-        stream := nil]
+	"Close stream associated with receiver."
+
+	stream ifNotNil: [ 
+		stream close.
+		stream := nil ]
 ]
 
 { #category : #public }
@@ -52,9 +53,9 @@ ODBFile >> createOn: aFileReference [
 
 { #category : #private }
 ODBFile >> created [
-                "Private - Implemented by subclasses."
+	"Private - Implemented by subclasses."
 
-        stream flush
+	stream flush
 ]
 
 { #category : #initialization }
@@ -74,9 +75,9 @@ ODBFile >> finalize [
 
 { #category : #locking }
 ODBFile >> flush [
-        "Flush stream."
+	"Flush stream."
 
-    stream flush
+	stream flush
 ]
 
 { #category : #private }
@@ -209,20 +210,18 @@ ODBFile >> waitForLockAt: pos length: length [
 
 { #category : #locking }
 ODBFile >> waitForLockAt: pos length: length whileWaitingDo: aBlock [
-	| startTime currentTime |
-	"Wait for lock at given position. Evaluate aBlock in 
-	each iteration."
 
-	(stream lockAt: pos length: length) ifFalse: [
-		startTime := Time totalSeconds.
-		[stream lockAt: pos length: length] whileFalse: [
-			aBlock value.
-			currentTime := Time totalSeconds.
-			currentTime - startTime < self timeOutLength
-				ifFalse: [
-					ODBLockNotification signal
-						ifTrue: [startTime := currentTime]
-						ifFalse: [ ^ ODBCannotLock signal ] ] ] ]
+	| startTime currentTime |
+	(stream lockAt: pos length: length) ifTrue: [ ^ self ].
+	
+	startTime := Time totalSeconds.
+	[ stream lockAt: pos length: length ] whileFalse: [ 
+		aBlock value.
+		currentTime := Time totalSeconds.
+		currentTime - startTime < self timeOutLength ifFalse: [ 
+			ODBLockNotification signal
+				ifTrue: [ startTime := currentTime ]
+				ifFalse: [ ^ ODBCannotLock signal ] ] ]
 ]
 
 { #category : #private }
