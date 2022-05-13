@@ -87,10 +87,6 @@ ODBDeserializer class >> init [
 		at: 38 put: IdentityDictionary;
 		at: 39 put: Fraction;
 		at: 40 put: Float;
-		at: 41 put: (ODBCopyValue value: 0.0);
-		at: 42 put: (ODBCopyValue value: 1.0);
-		at: 43 put: ODBFloatAsInteger;
-		at: 44 put: ODBFloatAs100Integer;
 		at: 45 put: ScaledDecimal;
 		at: 46 put: Float;
 		at: 47 put: SmallFloat64;

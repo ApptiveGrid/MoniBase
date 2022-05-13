@@ -80,10 +80,6 @@ ODBEncodingStream class >> initializeTypeCodeMapping [
 		at: ODBIdentityDictionaryCode            put: IdentityDictionary;
 		at: ODBFractionCode                      put: Fraction;
 		at: ODBFloatCode                         put: Float;
-		at: ODBFloatValue0                       put: (ODBCopyValue value: 0.0);
-		at: ODBFloatValue1                       put: (ODBCopyValue value: 1.0);
-		at: ODBFloatAsIntegerCode                put: ODBFloatAsInteger;
-		at: ODBFloatAs100IntegerCode             put: ODBFloatAs100Integer;
 		at: ODBScaledDecimalCode                 put: ScaledDecimal;
 		"legacy double entry with type code 40?"
 		"at: ODBFloatCode                         put: Float;"
