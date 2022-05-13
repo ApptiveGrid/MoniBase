@@ -84,8 +84,6 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBFractionCode := 39.
 	ODBFloatCode := 40.
 	ODBScaledDecimalCode := 45.
-	"legacy ?"
-	"ODBFloatCode := 46."
 	ODBSmallFloat64Code := 47.
 	"integers <= 16 are stored with code 50 + number"
 	ODBSmallPositiveIntegerBaseCode := 50. 

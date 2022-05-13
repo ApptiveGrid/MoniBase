@@ -81,8 +81,6 @@ ODBEncodingStream class >> initializeTypeCodeMapping [
 		at: ODBFractionCode                      put: Fraction;
 		at: ODBFloatCode                         put: Float;
 		at: ODBScaledDecimalCode                 put: ScaledDecimal;
-		"legacy double entry with type code 40?"
-		"at: ODBFloatCode                         put: Float;"
 		at: ODBSmallFloat64Code                  put: SmallFloat64;
 	
 		at: ODBSmallPositiveIntegerBaseCode      put: 0;
