@@ -234,15 +234,15 @@ ODBLocalTransaction >> peekTransactionObjectAt: objectID [
 
 	"Answer transaction object at objectID but do not cache it in transaction."
 
-	| holder transactionObject |
-	(transactionObject := self cachedTransactionObjectAt: objectID) 
-		ifNotNil: [ ^ transactionObject ].
+	| holder  |
+	(self cachedTransactionObjectAt: objectID) ifNotNil: [ : transactionObject | ^ transactionObject ].
 	(holder := dbConnection objectManager holderAt: objectID) ifNil: [ 
 		OmniBase signalError: 'Invalid object ID' ].
 	[ versionDescriptor versionOK: holder versionNumber ] whileFalse: [ 
 		holder loadPreviousVersionFrom: self oldHolders ].
-	transactionObject := holder getObject makeTransactionObject: self.
-	^ transactionObject objectLoaded
+	
+	^ (holder getObject makeTransactionObject: self) objectLoaded
+
 ]
 
 { #category : #private }
