@@ -29,6 +29,14 @@ ODBIdentityDictionary class >> odbDeserialize: deserializer [
 	^ deserializer stream nextODBIdentityDictionary:  self
 ]
 
+{ #category : #accessing }
+ODBIdentityDictionary >> associations [
+	"Answer a collection containing the receiver's associations"
+	
+	^Array new: self size streamContents: [ :stream |
+		self associationsDo: [ :each | stream nextPut: each ] ]
+]
+
 { #category : #public }
 ODBIdentityDictionary >> associationsDo: aBlock [ 
 	"Evaluate aBlock for each value in dictionary."

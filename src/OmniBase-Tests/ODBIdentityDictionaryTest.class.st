@@ -17,6 +17,13 @@ ODBIdentityDictionaryTest >> setUp [
 ]
 
 { #category : #tests }
+ODBIdentityDictionaryTest >> testAssociations [
+	dict at: #hello put: true.
+	dict at: #hell2 put: true.
+	self assert: dict associations size equals: 2
+]
+
+{ #category : #tests }
 ODBIdentityDictionaryTest >> testAssociationsDo [
 	dict at: #hello put: true.
 	dict at: #hell2 put: true.
