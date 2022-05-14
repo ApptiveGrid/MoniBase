@@ -17,14 +17,19 @@ Class {
 }
 
 { #category : #public }
-ODBBTreeIterator >> at: aString ifAbsent: aBlock [ 
+ODBBTreeIterator >> at: aString ifAbsent: aBlock [
+
 	| key association |
 	key := ByteArray new: keyLength.
-	key replaceFrom: 1 to: (aString size min: keyLength) with: aString startingAt: 1.
+	key
+		replaceFrom: 1
+		to: (aString size min: keyLength)
+		with: aString
+		startingAt: 1.
 	association := self goToAndGetCurrentAt: key.
 	self clearSearchCache.
-	association isNil ifTrue: [^aBlock value].
-	^association value odbLongAt: 1
+	association ifNil: [ ^ aBlock value ].
+	^ association value odbLongAt: 1
 ]
 
 { #category : #public }
@@ -169,16 +174,18 @@ ODBBTreeIterator >> getSizeHolder [
 ]
 
 { #category : #public }
-ODBBTreeIterator >> goTo: aByteArray [ 
-	aByteArray isNil ifFalse: [nextKey := aByteArray]
+ODBBTreeIterator >> goTo: aByteArray [
+
+	aByteArray ifNotNil: [ nextKey := aByteArray ]
 ]
 
 { #category : #public }
-ODBBTreeIterator >> goTo: aByteArray put: aValue [ 
-	mutex critical: 
-			[aByteArray isNil ifFalse: [nextKey := aByteArray].
-			self basicPut: aValue].
-	^aValue
+ODBBTreeIterator >> goTo: aByteArray put: aValue [
+
+	mutex critical: [ 
+		aByteArray ifNotNil: [ nextKey := aByteArray ].
+		self basicPut: aValue ].
+	^ aValue
 ]
 
 { #category : #public }
@@ -200,24 +207,22 @@ ODBBTreeIterator >> initialize [
 ]
 
 { #category : #private }
-ODBBTreeIterator >> insertValue: aValue lockID: lockID [ 
+ODBBTreeIterator >> insertValue: aValue lockID: lockID [
+
 	"Private - Insert aValue and lockID at currentKey. 
         Precondition: search path to currentKey is loaded and 
         currentKey does not exists."
 
 	| page pageSplit |
 	page := searchPath at: searchPathHeight.
-	pageSplit := page 
-				insertKey: currentKey
-				value: aValue
-				lockID: lockID.
-	pageSplit isNil 
-		ifTrue: 
-			[currentKeyExists := true.
-			page storeLocked.
-			^self].
-	
-	[(pageSplit at: 1)
+	pageSplit := page insertKey: currentKey value: aValue lockID: lockID.
+	pageSplit ifNil: [ 
+		currentKeyExists := true.
+		page storeLocked.
+		^ self ].
+
+	[ 
+	(pageSplit at: 1)
 		position: stream setToEnd;
 		store.
 	(pageSplit at: 3)
@@ -225,17 +230,16 @@ ODBBTreeIterator >> insertValue: aValue lockID: lockID [
 		store.
 	searchPath at: searchPathHeight put: nil.
 	searchPathHeight := searchPathHeight - 1.
-	searchPathHeight == 0 
-		ifFalse: [page := searchPath at: searchPathHeight]
-		ifTrue: 
-			[page := self pageClass 
-						createOnFile: self
-						position: rootPagePosition
-						keyLength: keyLength
-						valueLength: valueLength].
+	page := searchPathHeight == 0
+		        ifFalse: [ searchPath at: searchPathHeight ]
+		        ifTrue: [ 
+			        self pageClass
+				        createOnFile: self
+				        position: rootPagePosition
+				        keyLength: keyLength
+				        valueLength: valueLength ].
 	pageSplit := page insertPageSplit: pageSplit.
-	pageSplit isNil] 
-			whileFalse: [].
+	pageSplit isNil ] whileFalse: [  ].
 	self clearSearchPath.
 	page storeLocked
 ]
@@ -355,16 +359,16 @@ ODBBTreeIterator >> lockTree [
 
 { #category : #'private/initialization' }
 ODBBTreeIterator >> opened [
-                "Private - File has just been opened."
+	"Private - File has just been opened."
 
-        | buffer bufSize |
-        bufSize := ODBSizeHolder sizeInBytes + 2 + 2.
-        buffer := ByteArray new: bufSize.
-        stream getBytesFor: buffer.
-        keyLength := buffer odbShortAt: bufSize - 3.
-        valueLength := buffer odbShortAt: bufSize - 1.
-        currentKey := ByteArray new: keyLength.
-        nextKey := ByteArray new: keyLength
+	| buffer bufSize |
+	bufSize := ODBSizeHolder sizeInBytes + 2 + 2.
+	buffer := ByteArray new: bufSize.
+	stream getBytesFor: buffer.
+	keyLength := buffer odbShortAt: bufSize - 3.
+	valueLength := buffer odbShortAt: bufSize - 1.
+	currentKey := ByteArray new: keyLength.
+	nextKey := ByteArray new: keyLength
 ]
 
 { #category : #'private/initialization' }
@@ -413,59 +417,55 @@ ODBBTreeIterator >> searchCurrentKeyFrom: pagePosition [
 
 { #category : #private }
 ODBBTreeIterator >> searchNextAssociation [
+
 	"Private - Search for next association. Answer <nil> if none."
 
 	| page association nextPagePosition |
 	page := self lastPage.
-	currentKeyExists ifFalse: [association := page currentAssociation].
-	[association isNil] whileTrue: 
-			[(nextPagePosition := page nextPage) = 0 
-				ifFalse: 
-					[nextPagePosition isNil 
-						ifTrue: 
-							[searchPathHeight = 1 
-								ifTrue: 
-									[nextKey := (ByteArray new: keyLength) atAllPut: 255.
-									self clearSearchPath.
-									^nil].
-							page := self removeLastPage]
-						ifFalse: 
-							[
-							[page := self loadPageAt: nextPagePosition.
-							(nextPagePosition := page leftNext) = 0] 
-									whileFalse: []]].
-			association := page currentAssociation].
+	currentKeyExists ifFalse: [ association := page currentAssociation ].
+	[ association isNil ] whileTrue: [ 
+		(nextPagePosition := page nextPage) = 0 ifFalse: [ 
+			nextPagePosition
+				ifNil: [ 
+					searchPathHeight = 1 ifTrue: [ 
+						nextKey := (ByteArray new: keyLength) atAllPut: 255.
+						self clearSearchPath.
+						^ nil ].
+					page := self removeLastPage ]
+				ifNotNil: [ 
+					[ 
+					page := self loadPageAt: nextPagePosition.
+					(nextPagePosition := page leftNext) = 0 ] whileFalse: [  ] ] ].
+		association := page currentAssociation ].
 	nextKey := currentKey := association key.
 	currentKeyExists := true.
-	^association
+	^ association
 ]
 
 { #category : #private }
 ODBBTreeIterator >> searchPreviousAssociation [
+
 	"Private - Search for the previous association. Answer <nil> if none."
 
 	| page association pagePosition |
 	page := self lastPage.
-	[association isNil] whileTrue: 
-			[(pagePosition := page previousPage) = 0 
-				ifFalse: 
-					[pagePosition isNil 
-						ifTrue: 
-							[searchPathHeight = 1 
-								ifTrue: 
-									[nextKey := ByteArray new: keyLength.
-									self clearSearchPath.
-									^nil].
-							page := self removeLastPage]
-						ifFalse: 
-							[
-							[page := self loadPageAt: pagePosition.
-							(pagePosition := page rightNext) = 0] 
-									whileFalse: []]].
-			association := page previousAssociation].
+	[ association isNil ] whileTrue: [ 
+		(pagePosition := page previousPage) = 0 ifFalse: [ 
+			pagePosition
+				ifNil: [ 
+					searchPathHeight = 1 ifTrue: [ 
+						nextKey := ByteArray new: keyLength.
+						self clearSearchPath.
+						^ nil ].
+					page := self removeLastPage ]
+				ifNotNil: [ 
+					[ 
+					page := self loadPageAt: pagePosition.
+					(pagePosition := page rightNext) = 0 ] whileFalse: [  ] ] ].
+		association := page previousAssociation ].
 	nextKey := currentKey := association key.
 	currentKeyExists := true.
-	^association
+	^ association
 ]
 
 { #category : #public }
@@ -499,56 +499,56 @@ ODBBTreeIterator >> unlockTree [
 
 { #category : #private }
 ODBBTreeIterator >> updateCurrentKey [
+
 	"Private - Check if iterator has been moved
         and update cache if it has been moved."
 
 	| nextPagePosition |
-	searchPathHeight = 0 
-		ifTrue: 
-			[currentKey := nextKey.
-			currentKeyExists := false.
-			^self searchCurrentKeyFrom: rootPagePosition].
-	self isCurrentKeySet ifTrue: [^self].
+	searchPathHeight = 0 ifTrue: [ 
+		currentKey := nextKey.
+		currentKeyExists := false.
+		^ self searchCurrentKeyFrom: rootPagePosition ].
+	self isCurrentKeySet ifTrue: [ ^ self ].
 	currentKey := nextKey.
 	currentKeyExists := false.
-	[searchPathHeight > 1] whileTrue: 
-			[(nextPagePosition := (searchPath at: searchPathHeight) positionToCachedKey: currentKey) 
-				== true 
-					ifTrue: 
-						[currentKeyExists := true.
-						^self].
-			nextPagePosition isNil 
-				ifFalse: 
-					[nextPagePosition = 0 ifTrue: [^self].
-					^self searchCurrentKeyFrom: nextPagePosition].
-			searchPath at: searchPathHeight put: nil.
-			searchPathHeight := searchPathHeight - 1].
-	(nextPagePosition := (searchPath at: 1) positionToKey: currentKey) == true 
-		ifTrue: 
-			[currentKeyExists := true.
-			^self].
-	nextPagePosition = 0 ifFalse: [self searchCurrentKeyFrom: nextPagePosition]
+	[ searchPathHeight > 1 ] whileTrue: [ 
+		(nextPagePosition := (searchPath at: searchPathHeight) 
+			                     positionToCachedKey: currentKey) == true 
+			ifTrue: [ 
+				currentKeyExists := true.
+				^ self ].
+		nextPagePosition ifNotNil: [ 
+			nextPagePosition = 0 ifTrue: [ ^ self ].
+			^ self searchCurrentKeyFrom: nextPagePosition ].
+		searchPath at: searchPathHeight put: nil.
+		searchPathHeight := searchPathHeight - 1 ].
+	(nextPagePosition := (searchPath at: 1) positionToKey: currentKey)
+	== true ifTrue: [ 
+		currentKeyExists := true.
+		^ self ].
+	nextPagePosition = 0 ifFalse: [ 
+		self searchCurrentKeyFrom: nextPagePosition ]
 ]
 
 { #category : #public }
-ODBBTreeIterator >> updateSizeAt: versionNumber oldHolders: oldHolders deltaSize: deltaSize [ 
+ODBBTreeIterator >> updateSizeAt: versionNumber oldHolders: oldHolders deltaSize: deltaSize [
+
 	| oldHolder newHolder pos |
 	pos := self headerLength.
 	self waitForLockAt: pos length: ODBSizeHolder sizeInBytes.
-	
-	[oldHolder := (ODBSizeHolder new)
-				loadFromStream: stream at: pos;
-				yourself.
-	oldHolders isNil 
-		ifTrue: [newHolder := oldHolder]
-		ifFalse: 
-			[newHolder := oldHolder makeNewVersion: oldHolders.
-			oldHolders flush].
+
+	[ 
+	oldHolder := ODBSizeHolder new
+		             loadFromStream: stream at: pos;
+		             yourself.
+	oldHolders ifNil: [ newHolder := oldHolder ] ifNotNil: [ 
+		newHolder := oldHolder makeNewVersion: oldHolders.
+		oldHolders flush ].
 	newHolder
 		dictionarySize: oldHolder dictionarySize + deltaSize;
 		versionNumber: versionNumber.
-	newHolder storeOnStream: stream at: pos] 
-			ensure: [self unlockAt: pos length: ODBSizeHolder sizeInBytes]
+	newHolder storeOnStream: stream at: pos ] ensure: [ 
+		self unlockAt: pos length: ODBSizeHolder sizeInBytes ]
 ]
 
 { #category : #public }

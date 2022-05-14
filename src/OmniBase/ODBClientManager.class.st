@@ -50,26 +50,25 @@ ODBClientManager >> clientFileName: clientID [
 
 { #category : #public }
 ODBClientManager >> clients [
+
 	"Answer collection of all clients currently connected to database."
 
-	| client coll |
+	| coll |
 	coll := OrderedCollection new.
-	idTable 
-		onClientIDsDo: [:clientID | (client := self clientAt: clientID) == nil ifFalse: [coll add: client]].
-	^coll
+	idTable onClientIDsDo: [ :clientID | 
+		(self clientAt: clientID) ifNotNil: [:client | coll add: client ] ].
+	^ coll
 ]
 
 { #category : #'public/create/open/close' }
 ODBClientManager >> close [
 
-    clients isNil
-        ifFalse: [
-            clients do: [:each | each == nil ifFalse: [ each remove ]].
-            clients := nil ].
-    idTable isNil
-        ifFalse: [
-            idTable close.
-            idTable := nil ]
+	clients ifNotNil: [ 
+		clients do: [ :each | each ifNotNil: [ each remove ] ].
+		clients := nil ].
+	idTable ifNotNil: [ 
+		idTable close.
+		idTable := nil ]
 ]
 
 { #category : #public }
@@ -111,22 +110,23 @@ ODBClientManager >> idFileName [
 
 { #category : #'public/unclassified' }
 ODBClientManager >> localClient [
-        "Answer local client."
 
-    localClient == nil
-        ifFalse: [ ^localClient ]
-        ifTrue: [ ^localClient := self newClient ]
+	"Answer local client."
+
+	^ localClient ifNil: [ localClient := self newClient ]
 ]
 
 { #category : #public }
 ODBClientManager >> newClient [
+
 	"Answer new local client."
 
 	| newClient |
-	idTable 
-		onNewClientIDDo: [:newID | newClient := ODBLocalClient new createOn: self clientID: newID].
-	newClient isNil ifTrue: [OmniBase signalError: 'Maximum number of clients reached'].
-	^newClient
+	idTable onNewClientIDDo: [ :newID | 
+		newClient := ODBLocalClient new createOn: self clientID: newID ].
+	newClient ifNil: [ 
+		OmniBase signalError: 'Maximum number of clients reached' ].
+	^ newClient
 ]
 
 { #category : #'public/create/open/close' }

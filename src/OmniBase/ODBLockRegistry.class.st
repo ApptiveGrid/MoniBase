@@ -82,12 +82,14 @@ ODBLockRegistry >> checkRemoval [
 
 { #category : #testing }
 ODBLockRegistry >> hasForeignLockFor: aTransactionObject transaction: aTransaction [
+
 	"test if there is a lock that is present and that belongs to aTransaction"
-	^ mutex critical: [
-		locks 
-			at: aTransactionObject lockRegistryKey 
-			ifPresent: [ :lock | (lock transaction = aTransaction) not  ]
-			ifAbsent: [ false ] ]
+
+	^ mutex critical: [ 
+		  locks
+			  at: aTransactionObject lockRegistryKey
+			  ifPresent: [ :lock | lock transaction ~= aTransaction ]
+			  ifAbsent: [ false ] ]
 ]
 
 { #category : #testing }
