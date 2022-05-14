@@ -45,8 +45,7 @@ Class {
 
 { #category : #initialization }
 ODBTypeCodes class >> initialize [ 
-	self initializeTypeCodes.
-	ODBEncodingStream initializeTypeCodeMapping
+	self initializeTypeCodes
 ]
 
 { #category : #initialization }
