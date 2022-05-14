@@ -118,7 +118,7 @@ ODBSerializationTest >> testSerializationBoxedFloat64Infinity [
 	self assert: materialized equals: float
 ]
 
-{ #category : #tests }
+{ #category : #'tests-twice' }
 ODBSerializationTest >> testSerializationBoxedFloat64Twice [
 	| float object serialized materialized |
 	
@@ -128,6 +128,12 @@ ODBSerializationTest >> testSerializationBoxedFloat64Twice [
 
 	serialized := ODBSerializer serializeToBytes: object.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First Float"
+	self assert: (serialized at: 9) equals: ODBFloatCode.
+	"Second Float: should this be an internal reference, not the float again?"
+	self assert: (serialized at: 16) equals: ODBFloatCode.
 	self assert: object first identicalTo: object second.
 	self assert: materialized equals: object.
 ]
@@ -179,14 +185,22 @@ ODBSerializationTest >> testSerializationCharacter [
 	self assert: materialized equals: object.
 ]
 
-{ #category : #tests }
+{ #category : #'tests-twice' }
 ODBSerializationTest >> testSerializationCharacterTwice [
 	| object character serialized materialized |
 	character := $a.
 	object := {character. character}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First Character"
+	self assert: (serialized at: 9) equals: ODBCharacterCode.
+	"Second Character, they are immediate objects, so we do store them directly"
+	self assert: (serialized at: 11) equals: ODBCharacterCode.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	
 	self assert: object first identicalTo: object second.
 	self assert: materialized equals: object.
 
@@ -263,13 +277,20 @@ ODBSerializationTest >> testSerializationFraction [
 	self assert: materialized equals: object
 ]
 
-{ #category : #tests }
+{ #category : #'tests-twice' }
 ODBSerializationTest >> testSerializationFractionTwice [
 	| fraction object serialized materialized |
 	fraction := 1/2.
 	object := {fraction . fraction}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First Fraction"
+	self assert: (serialized at: 9) equals: ODBFractionCode.
+	"Second Fraction. Should this be a reference?"
+	self assert: (serialized at: 12) equals: ODBFractionCode.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: object first identicalTo: object second.
 	self assert: materialized equals: object
@@ -336,7 +357,7 @@ ODBSerializationTest >> testSerializationLargeInteger [
 	self assert: materialized equals: object
 ]
 
-{ #category : #tests }
+{ #category : #'tests-twice' }
 ODBSerializationTest >> testSerializationLargeIntegerTwice [
 
 	| object integer serialized materialized |
@@ -347,16 +368,29 @@ ODBSerializationTest >> testSerializationLargeIntegerTwice [
 	object := {integer. integer}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First LargeInteger"
+	self assert: (serialized at: 9) equals: ODBLargePositiveIntegerCode.
+	"Second LargeInteger. Should this be a reference?"
+	self assert: (serialized at: 19) equals: ODBLargePositiveIntegerCode.
+	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: object first identicalTo: object second.
 	self assert: materialized equals: object.
 	
-	"SmallInteger"
+	"LargeNegativeInteger"
 	
 	integer := SmallInteger minVal - 1.
 	object := {integer. integer}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First LargeInteger"
+	self assert: (serialized at: 9) equals: ODBLargeNegativeIntegerCode.
+	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: object first identicalTo: object second.
 	self assert: materialized equals: object.
@@ -486,7 +520,7 @@ ODBSerializationTest >> testSerializationSmallFloat64 [
 	self assert: materialized identicalTo: float.
 ]
 
-{ #category : #tests }
+{ #category : #'tests-twice' }
 ODBSerializationTest >> testSerializationSmallFloat64Twice [
 	| object serialized materialized |
 	
@@ -494,6 +528,13 @@ ODBSerializationTest >> testSerializationSmallFloat64Twice [
 	object := {1.11 . 1.11}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First Float"
+	self assert: (serialized at: 9) equals: ODBSmallFloat64Code.
+	"Second Float: as small floats are immediate, we do not store a reference"
+	self assert: (serialized at: 20) equals: ODBSmallFloat64Code.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
 	self assert: materialized first identicalTo: object first.
@@ -619,7 +660,7 @@ ODBSerializationTest >> testSerializationString [
 	self assert: materialized equals: string
 ]
 
-{ #category : #tests }
+{ #category : #'tests-twice' }
 ODBSerializationTest >> testSerializationStringTwice [
 	
 	| object serialized materialized |
@@ -628,6 +669,14 @@ ODBSerializationTest >> testSerializationStringTwice [
 	object := {'h' . 'h'}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First String"
+	self assert: (serialized at: 9) equals: ODBSmallStringBaseCode + 1.
+	"Second String is stored as an internal reference"
+	self assert: (serialized at: 11) equals: ODBInternalReference.
+	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
 	
@@ -635,6 +684,16 @@ ODBSerializationTest >> testSerializationStringTwice [
 	object := {'hello' . 'hello'}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First String"
+	self assert: (serialized at: 9) equals: ODBSmallStringBaseCode + 5.
+	"Second String is stored as an internal reference"
+	self assert: (serialized at: 15) equals: ODBInternalReference.
+	
+
+	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
 	
@@ -642,6 +701,14 @@ ODBSerializationTest >> testSerializationStringTwice [
 	object := {'helloWithMoreCharacters' . 'helloWithMoreCharacters'}.
 
 	serialized := ODBSerializer serializeToBytes: object.
+	
+	"First the Array"
+	self assert: (serialized at: 7) equals: ODBArrayCode.
+	"First String"
+	self assert: (serialized at: 9) equals: ODBStringCode.
+	"Second String is stored as an internal reference"
+	self assert: (serialized at: 34) equals: ODBInternalReference.
+	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
 ]
