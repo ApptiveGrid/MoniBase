@@ -12,11 +12,7 @@ Class {
 		'ODBDoubleByteCharacterCode',
 		'ODBExternalReferenceCode',
 		'ODBFalseCode',
-		'ODBFloatAs100IntegerCode',
-		'ODBFloatAsIntegerCode',
 		'ODBFloatCode',
-		'ODBFloatValue0',
-		'ODBFloatValue1',
 		'ODBFractionCode',
 		'ODBIdentityDictionaryCode',
 		'ODBInternalReference',
@@ -27,7 +23,6 @@ Class {
 		'ODBMinusOne',
 		'ODBMinusThreeCode',
 		'ODBMinusTwo',
-		'ODBNilCode',
 		'ODBODBIdentityDictionaryCode',
 		'ODBOrderedCollectionCode',
 		'ODBPersistentDictionaryCode',
@@ -88,13 +83,7 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBIdentityDictionaryCode := 38.
 	ODBFractionCode := 39.
 	ODBFloatCode := 40.
-	ODBFloatValue0 := 41.
-	ODBFloatValue1 := 42.
-	ODBFloatAsIntegerCode := 43.
-	ODBFloatAs100IntegerCode := 44.
 	ODBScaledDecimalCode := 45.
-	"legacy ?"
-	"ODBFloatCode := 46."
 	ODBSmallFloat64Code := 47.
 	"integers <= 16 are stored with code 50 + number"
 	ODBSmallPositiveIntegerBaseCode := 50. 
