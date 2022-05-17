@@ -2,7 +2,6 @@ Class {
 	#name : #ODBDeserializer,
 	#superclass : #Object,
 	#instVars : [
-		'classArray',
 		'classes',
 		'classesCounter',
 		'classManager',
@@ -12,17 +11,8 @@ Class {
 		'referenceManager',
 		'transaction'
 	],
-	#classInstVars : [
-		'classArray'
-	],
 	#category : #'OmniBase-Serializers'
 }
-
-{ #category : #private }
-ODBDeserializer class >> classArray [
-
-	^classArray ifNil: [ self init ]
-]
 
 { #category : #public }
 ODBDeserializer class >> deserializeFromBytes: aByteArray [ 
@@ -52,94 +42,16 @@ ODBDeserializer class >> deserializeFromBytes: aByteArray externalReferencesLoad
 		classManager: classManager
 ]
 
-{ #category : #private }
-ODBDeserializer class >> init [
-	<script>
-
-	classArray := Array new: 255.
-	classArray
-		at: 2 put: ODBNewObjectNewClass;
-		at: 3 put: ODBNewObject;
-		at: 4 put: ODBExistingObject;
-		at: 5 put: ODBExternalReference;
-		at: 6 put: ODBClassManagerForSerialization;
-		at: 10 put: nil;
-		at: 11 put: ODBLargePositiveInteger;
-		at: 12 put: ODBLargeNegativeInteger;
-		at: 13 put: Character;
-		at: 14 put: UndefinedObject;
-		at: 15 put: true;
-		at: 16 put: false;
-		at: 17 put: Message;
-		at: 18 put: Symbol;
-		at: 19 put: Smalltalk globals;
-		at: 20 put: MessageSend;
-		at: 22 put: Processor;
-		at: 26 put: Class;
-		at: 29 put: ODBDoubleByteCharacter;
-		at: 31 put: Association;
-		at: 32 put: Date;
-		at: 33 put: Time;
-		at: 34 put: String;
-		at: 35 put: Array;
-		at: 36 put: WideString;
-		at: 37 put: Dictionary;
-		at: 38 put: IdentityDictionary;
-		at: 39 put: Fraction;
-		at: 40 put: Float;
-		at: 45 put: ScaledDecimal;
-		at: 46 put: Float;
-		at: 47 put: SmallFloat64;
-	
-		at: 50 put: 0;
-		at: 51 put: 1;
-		at: 52 put: 2;
-		at: 53 put: 3;
-		at: 54 put: 4;
-		at: 55 put: 5;
-		at: 56 put: 6;
-		at: 57 put: 7;
-		at: 58 put: 8;
-		at: 59 put: 9;
-		at: 60 put: 10;
-		at: 61 put: 11;
-		at: 62 put: 12;
-		at: 63 put: 13;
-		at: 64 put: 14;
-		at: 65 put: 15;
-		at: 66 put: 16;
-		at: 67 put: -3;
-		at: 68 put: -2;
-		at: 69 put: -1;
-		at: 70 put: ODBEmptyString;
-		at: 71 put: ODB1CharacterString;
-		at: 72 put: (ODBnCharacterString length: 2);
-		at: 73 put: (ODBnCharacterString length: 3);
-		at: 74 put: (ODBnCharacterString length: 4);
-		at: 75 put: (ODBnCharacterString length: 5);
-		at: 76 put: (ODBnCharacterString length: 6);
-		at: 77 put: (ODBnCharacterString length: 7);
-		at: 78 put: (ODBnCharacterString length: 8);
-		at: 79 put: (ODBnCharacterString length: 9);
-		at: 80 put: ByteArray;
-		at: 81 put: OrderedCollection;
-		at: 82 put: ODBIdentityDictionary;
-		at: 83 put: ODBPersistentDictionary;
-		at: 84 put: ODBTransaction.
-	^classArray
-]
-
 { #category : #public }
 ODBDeserializer >> deserializeFrom: aStream referenceManager: aReferenceManager classManager: aClassManager [ 
 	stream := aStream readerWriter: self.
 	referenceManager := aReferenceManager.
 	classManager := aClassManager.
-	classArray := self class classArray.
 	objects := Array new: stream primitive getLong.
 	classes := OrderedCollection new: 30.
 	counter := 0.
 	classesCounter := 0.
-	^self odbNextObject
+	^ stream odbNextObject
 ]
 
 { #category : #public }
@@ -151,12 +63,11 @@ ODBDeserializer >> deserializeFrom: aStream
 	referenceManager := aReferenceManager.
 	classManager := aTransaction environment classManager.
 	transaction := aTransaction.
-	classArray := self class classArray.
 	objects := Array new: stream primitive getLong.
 	classes := OrderedCollection new: 30.
 	counter := 0.
 	classesCounter := 0.
-	^self odbNextObject
+	^ stream odbNextObject
 ]
 
 { #category : #private }
@@ -201,7 +112,7 @@ ODBDeserializer >> newObjectOldClass [
 { #category : #private }
 ODBDeserializer >> odbNextObject [
 
-	^(classArray at: stream primitive getByte) odbDeserialize: self
+	^ stream odbNextObject
 ]
 
 { #category : #private }
