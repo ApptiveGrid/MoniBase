@@ -230,18 +230,6 @@ ODBEncodingStream >> nextDoubleByteCharacter [
 ]
 
 { #category : #reading }
-ODBEncodingStream >> nextFloatAs100Integer [
-
-    ^ stream getInteger / 100.0
-]
-
-{ #category : #reading }
-ODBEncodingStream >> nextFloatAsInteger [
-
-    ^ stream getInteger asFloat
-]
-
-{ #category : #reading }
 ODBEncodingStream >> nextFraction: aClass [
 	^ aClass 
 		numerator: stream getInteger
