@@ -91,7 +91,7 @@ ODBEncodingStream >> nextArray: aClass [
 	| array |
 	array := aClass new: stream getPositiveInteger.
 	readerWriter register: array.
-	1 to: array size do: [:i | array at: i put: (self odbNextObject: readerWriter) ].
+	1 to: array size do: [:i | array at: i put: self odbNextObject ].
 	^array
 ]
 
@@ -100,8 +100,8 @@ ODBEncodingStream >> nextAssociation: aClass [
 	| result |
 	readerWriter register: (result := aClass new).
 	^result
-		key: (self odbNextObject: readerWriter);
-		value: (self odbNextObject: readerWriter)
+		key: self odbNextObject;
+		value: self odbNextObject
 ]
 
 { #category : #reading }
@@ -143,8 +143,8 @@ ODBEncodingStream >> nextDictionary: aClass [
 	dict := aClass new: size.
 	readerWriter register: dict.
 	size timesRepeat: [
-		key := (self odbNextObject: readerWriter).
-		dict at: key put: (self odbNextObject: readerWriter).
+		key := self odbNextObject.
+		dict at: key put: self odbNextObject.
 	].
 	^dict
 ]
@@ -177,7 +177,7 @@ ODBEncodingStream >> nextMessage: aClass [
 	| result |
 	readerWriter register: (result := aClass new).
 	^ result
-		setSelector: (self odbNextObject: readerWriter) arguments: (self odbNextObject: readerWriter);
+		setSelector: self odbNextObject arguments: self odbNextObject;
 		yourself
 ]
 
@@ -186,9 +186,9 @@ ODBEncodingStream >> nextMessageSend: aClass [
 	| result |
 	readerWriter register: (result := aClass new).
 	^result
-		receiver: (self odbNextObject: readerWriter);
-		selector: (self odbNextObject: readerWriter);
-		arguments: (self odbNextObject: readerWriter);
+		receiver: self odbNextObject;
+		selector: self odbNextObject;
+		arguments: self odbNextObject;
 		yourself
 ]
 
@@ -199,8 +199,8 @@ ODBEncodingStream >> nextODBIdentityDictionary: aClass [
 	dict := aClass new: size.
 	readerWriter register: dict.
 	size timesRepeat: 
-			[key := (self odbNextObject: readerWriter).
-			dict at: key put: (self odbNextObject: readerWriter)].
+			[key := self odbNextObject.
+			dict at: key put: self odbNextObject].
 	^dict
 ]
 
@@ -214,7 +214,7 @@ ODBEncodingStream >> nextOrderedCollection: aClass [
 	| coll size |
 	size := stream getPositiveInteger.
 	readerWriter register: (coll := aClass new: size).
-	size timesRepeat: [ coll addLast: (self odbNextObject: readerWriter) ].
+	size timesRepeat: [ coll addLast: self odbNextObject ].
 	^coll
 ]
 
@@ -226,8 +226,8 @@ ODBEncodingStream >> nextPersistentDictionary: aClass [
 	readerWriter register: dict.
 	size timesRepeat: [
 		dict 
-			superAt: (self odbNextObject: readerWriter) 
-			put: (self odbNextObject: readerWriter) ].
+			superAt: self odbNextObject 
+			put: self odbNextObject ].
 	^dict
 ]
 
@@ -506,8 +506,8 @@ ODBEncodingStream >> nextnCharacterStringSize: size [
 ]
 
 { #category : #reading }
-ODBEncodingStream >> odbNextObject: aDeserializer [
-	^ (typeCodeMapping at: stream getByte) odbDeserialize: aDeserializer 
+ODBEncodingStream >> odbNextObject [
+	^ (typeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
 ]
 
 { #category : #accessing }

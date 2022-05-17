@@ -51,7 +51,7 @@ ODBDeserializer >> deserializeFrom: aStream referenceManager: aReferenceManager 
 	classes := OrderedCollection new: 30.
 	counter := 0.
 	classesCounter := 0.
-	^ stream odbNextObject: self
+	^ stream odbNextObject
 ]
 
 { #category : #public }
@@ -67,7 +67,7 @@ ODBDeserializer >> deserializeFrom: aStream
 	classes := OrderedCollection new: 30.
 	counter := 0.
 	classesCounter := 0.
-	^ stream odbNextObject: self
+	^ stream odbNextObject
 ]
 
 { #category : #private }
@@ -112,7 +112,7 @@ ODBDeserializer >> newObjectOldClass [
 { #category : #private }
 ODBDeserializer >> odbNextObject [
 
-	^ stream odbNextObject: self
+	^ stream odbNextObject
 ]
 
 { #category : #private }
