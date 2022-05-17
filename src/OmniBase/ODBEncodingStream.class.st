@@ -156,6 +156,18 @@ ODBEncodingStream >> nextDoubleByteCharacter [
 ]
 
 { #category : #reading }
+ODBEncodingStream >> nextFloatAs100Integer [
+
+    ^ stream getInteger / 100.0
+]
+
+{ #category : #reading }
+ODBEncodingStream >> nextFloatAsInteger [
+
+    ^ stream getInteger asFloat
+]
+
+{ #category : #reading }
 ODBEncodingStream >> nextFraction: aClass [
 	^ aClass 
 		numerator: stream getInteger
@@ -220,7 +232,7 @@ ODBEncodingStream >> nextOrderedCollection: aClass [
 
 { #category : #reading }
 ODBEncodingStream >> nextPersistentDictionary: aClass [
-	| size dict |
+		| size dict |
 	size := stream getPositiveInteger.
 	dict := aClass new: size.
 	readerWriter register: dict.
@@ -500,7 +512,7 @@ ODBEncodingStream >> nextWideString [
 
 { #category : #reading }
 ODBEncodingStream >> nextnCharacterStringSize: size [
-	| buf |
+	    | buf |
    stream getBytesFor: (buf := ByteArray new: size) len: size.
     ^ readerWriter register: buf asString
 ]
