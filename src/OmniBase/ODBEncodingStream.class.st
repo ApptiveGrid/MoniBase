@@ -46,80 +46,6 @@ ODBEncodingStream class >> initializeEncoding [
 	self characterEncoding: #utf8
 ]
 
-{ #category : #initialization }
-ODBEncodingStream class >> initializeTypeCodeMapping [
-	<script>
-
-	typeCodeMapping := Array new: 255.
-	typeCodeMapping
-		at: 2                                    put: ODBNewObjectNewClass;
-		at: 3                                    put: ODBNewObject;
-		at: ODBInternalReference                 put: ODBExistingObject;
-		at: ODBExternalReferenceCode             put: ODBExternalReference;
-		at: 6                                    put: ODBClassManagerForSerialization;
-		at: ODBLargePositiveIntegerCode          put: ODBLargePositiveInteger;
-		at: ODBLargeNegativeIntegerCode          put: ODBLargeNegativeInteger;
-		at: ODBCharacterCode                     put: Character;
-		at: ODBUndefinedObjectCode               put: UndefinedObject;
-		at: ODBTrueCode                          put: true;
-		at: ODBFalseCode                         put: false;
-		at: ODBMessageCode                       put: Message;
-		at: ODBSymbolCode                        put: Symbol;
-		at: ODBSystemDictionaryCode              put: Smalltalk globals;
-		at: ODBMessageSendCode                   put: MessageSend;
-		at: ODBProcessSchedulerCode              put: Processor;
-		at: ODBClassCode                         put: Class;
-		at: ODBDoubleByteCharacterCode           put: ODBDoubleByteCharacter;
-		at: ODBAssociationCode                   put: Association;
-		at: ODBDateCode                          put: Date;
-		at: ODBTimeCode                          put: Time;
-		at: ODBStringCode                        put: String;
-		at: ODBArrayCode                         put: Array;
-		at: ODBWideStringCode                    put: WideString;
-		at: ODBDictionaryCode                    put: Dictionary;
-		at: ODBIdentityDictionaryCode            put: IdentityDictionary;
-		at: ODBFractionCode                      put: Fraction;
-		at: ODBFloatCode                         put: Float;
-		at: ODBScaledDecimalCode                 put: ScaledDecimal;
-		at: ODBSmallFloat64Code                  put: SmallFloat64;
-	
-		at: ODBSmallPositiveIntegerBaseCode      put: 0;
-		at: ODBSmallPositiveIntegerBaseCode + 1  put: 1;
-		at: ODBSmallPositiveIntegerBaseCode + 2  put: 2;
-		at: ODBSmallPositiveIntegerBaseCode + 3  put: 3;
-		at: ODBSmallPositiveIntegerBaseCode + 4  put: 4;
-		at: ODBSmallPositiveIntegerBaseCode + 5  put: 5;
-		at: ODBSmallPositiveIntegerBaseCode + 6  put: 6;
-		at: ODBSmallPositiveIntegerBaseCode + 7  put: 7;
-		at: ODBSmallPositiveIntegerBaseCode + 8  put: 8;
-		at: ODBSmallPositiveIntegerBaseCode + 9  put: 9;
-		at: ODBSmallPositiveIntegerBaseCode + 10 put: 10;
-		at: ODBSmallPositiveIntegerBaseCode + 11 put: 11;
-		at: ODBSmallPositiveIntegerBaseCode + 12 put: 12;
-		at: ODBSmallPositiveIntegerBaseCode + 13 put: 13;
-		at: ODBSmallPositiveIntegerBaseCode + 14 put: 14;
-		at: ODBSmallPositiveIntegerBaseCode + 15 put: 15;
-		at: ODBSmallPositiveIntegerBaseCode + 16 put: 16;
-		at: ODBMinusThreeCode                    put: -3;
-		at: ODBMinusTwo                          put: -2;
-		at: ODBMinusOne                          put: -1;
-		at: ODBSmallStringBaseCode               put: ODBEmptyString;
-		at: ODBSmallStringBaseCode + 1           put: ODB1CharacterString;
-		at: ODBSmallStringBaseCode + 2           put: (ODBnCharacterString length: 2);
-		at: ODBSmallStringBaseCode + 3           put: (ODBnCharacterString length: 3);
-		at: ODBSmallStringBaseCode + 4           put: (ODBnCharacterString length: 4);
-		at: ODBSmallStringBaseCode + 5           put: (ODBnCharacterString length: 5);
-		at: ODBSmallStringBaseCode + 6           put: (ODBnCharacterString length: 6);
-		at: ODBSmallStringBaseCode + 7           put: (ODBnCharacterString length: 7);
-		at: ODBSmallStringBaseCode + 8           put: (ODBnCharacterString length: 8);
-		at: ODBSmallStringBaseCode + 9           put: (ODBnCharacterString length: 9);
-		at: ODBByteArrayCode                     put: ByteArray;
-		at: ODBOrderedCollectionCode             put: OrderedCollection;
-		at: ODBODBIdentityDictionaryCode         put: ODBIdentityDictionary; 
-		at: ODBPersistentDictionaryCode          put: ODBPersistentDictionary;
-		at: ODBTransactionCode                   put: ODBTransaction.
-]
-
 { #category : #'instance creation' }
 ODBEncodingStream class >> on: aStream [ 
 	^ self new 
@@ -165,7 +91,7 @@ ODBEncodingStream >> nextArray: aClass [
 	| array |
 	array := aClass new: stream getPositiveInteger.
 	readerWriter register: array.
-	1 to: array size do: [:i | array at: i put: readerWriter odbNextObject ].
+	1 to: array size do: [:i | array at: i put: self odbNextObject ].
 	^array
 ]
 
@@ -174,8 +100,8 @@ ODBEncodingStream >> nextAssociation: aClass [
 	| result |
 	readerWriter register: (result := aClass new).
 	^result
-		key: readerWriter odbNextObject;
-		value: readerWriter odbNextObject
+		key: self odbNextObject;
+		value: self odbNextObject
 ]
 
 { #category : #reading }
@@ -217,8 +143,8 @@ ODBEncodingStream >> nextDictionary: aClass [
 	dict := aClass new: size.
 	readerWriter register: dict.
 	size timesRepeat: [
-		key := readerWriter odbNextObject.
-		dict at: key put: readerWriter odbNextObject.
+		key := self odbNextObject.
+		dict at: key put: self odbNextObject.
 	].
 	^dict
 ]
@@ -251,7 +177,7 @@ ODBEncodingStream >> nextMessage: aClass [
 	| result |
 	readerWriter register: (result := aClass new).
 	^ result
-		setSelector: readerWriter odbNextObject arguments: readerWriter odbNextObject;
+		setSelector: self odbNextObject arguments: self odbNextObject;
 		yourself
 ]
 
@@ -260,9 +186,9 @@ ODBEncodingStream >> nextMessageSend: aClass [
 	| result |
 	readerWriter register: (result := aClass new).
 	^result
-		receiver: readerWriter odbNextObject;
-		selector: readerWriter odbNextObject;
-		arguments: readerWriter odbNextObject;
+		receiver: self odbNextObject;
+		selector: self odbNextObject;
+		arguments: self odbNextObject;
 		yourself
 ]
 
@@ -273,8 +199,8 @@ ODBEncodingStream >> nextODBIdentityDictionary: aClass [
 	dict := aClass new: size.
 	readerWriter register: dict.
 	size timesRepeat: 
-			[key := readerWriter odbNextObject.
-			dict at: key put: readerWriter odbNextObject].
+			[key := self odbNextObject.
+			dict at: key put: self odbNextObject].
 	^dict
 ]
 
@@ -288,7 +214,7 @@ ODBEncodingStream >> nextOrderedCollection: aClass [
 	| coll size |
 	size := stream getPositiveInteger.
 	readerWriter register: (coll := aClass new: size).
-	size timesRepeat: [ coll addLast: readerWriter odbNextObject ].
+	size timesRepeat: [ coll addLast: self odbNextObject ].
 	^coll
 ]
 
@@ -300,8 +226,8 @@ ODBEncodingStream >> nextPersistentDictionary: aClass [
 	readerWriter register: dict.
 	size timesRepeat: [
 		dict 
-			superAt: readerWriter odbNextObject 
-			put: readerWriter odbNextObject ].
+			superAt: self odbNextObject 
+			put: self odbNextObject ].
 	^dict
 ]
 
@@ -577,6 +503,11 @@ ODBEncodingStream >> nextnCharacterStringSize: size [
 	    | buf |
    stream getBytesFor: (buf := ByteArray new: size) len: size.
     ^ readerWriter register: buf asString
+]
+
+{ #category : #reading }
+ODBEncodingStream >> odbNextObject [
+	^ (typeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
 ]
 
 { #category : #accessing }

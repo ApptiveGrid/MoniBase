@@ -10,7 +10,6 @@ Class {
 { #category : #running }
 ODBSerializationTest >> setUp [
 	super setUp.
-	ODBDeserializer init.
 	ODBTypeCodes initialize.
 ]
 
