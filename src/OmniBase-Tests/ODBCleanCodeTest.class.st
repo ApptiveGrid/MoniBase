@@ -89,7 +89,10 @@ ODBCleanCodeTest >> testNoUnusedClasses [
 ODBCleanCodeTest >> testNoUnusedInstanceVariablesLeft [
 	| variables classes validExceptions remaining |
 	
-	variables := OmniBase package definedClasses flatCollect: [ :each | each instanceVariables ].
+	classes := OmniBase package definedClasses
+	           , (OmniBase package definedClasses collect: [ :each | each classSide ]).
+	
+	variables := classes flatCollect: [ :each | each instanceVariables ].
 	variables := variables reject: [ :each | each isReferenced ].
 	
 	classes := variables collect: [ :each | each definingClass ] as: Set.
