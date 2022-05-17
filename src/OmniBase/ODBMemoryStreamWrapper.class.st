@@ -20,17 +20,6 @@ ODBMemoryStreamWrapper >> createOn: aByteArray [
 ]
 
 { #category : #public }
-ODBMemoryStreamWrapper >> getByte [
-	^ stream next
-]
-
-{ #category : #public }
-ODBMemoryStreamWrapper >> getChar [
-
-    ^ Character value: self getByte
-]
-
-{ #category : #public }
 ODBMemoryStreamWrapper >> getLong [
 
     ^self getWord bitOr: (self getWord bitShift: 16)
