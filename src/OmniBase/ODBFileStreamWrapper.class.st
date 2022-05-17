@@ -126,7 +126,7 @@ ODBFileStreamWrapper >> getByte [
 
 	| buf |
 	buf := ByteArray new: 1.
-	^(self getBytesFor: buf len: 1) == 1 ifTrue: [buf at: 1]
+	^(self getBytesFor: buf len: 1) == 1 ifTrue: [buf at: 1] ifFalse: [ nil ]
 ]
 
 { #category : #public }
