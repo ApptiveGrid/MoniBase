@@ -211,14 +211,13 @@ ODBBTreeDictionary >> objectLoaded [
 { #category : #private }
 ODBBTreeDictionary >> objectStored [
 	"Sent to transaction object when it is stored for the first time."
-
-	| container |
-	changed notNil 
-		ifTrue: 
-			[container := holder container.
-			changed do: 
-					[:eachValue | 
-					eachValue isRemoved ifFalse: [transaction makePersistent: eachValue object in: container]]]
+	
+	changed ifNotNil: [ 
+		| container |
+		container := holder container.
+		changed do: [ :eachValue | 
+			eachValue isRemoved ifFalse: [ 
+				transaction makePersistent: eachValue object in: container ] ] ]
 ]
 
 { #category : #public }
@@ -227,17 +226,18 @@ ODBBTreeDictionary >> removeKey: aKey [
 ]
 
 { #category : #public }
-ODBBTreeDictionary >> removeKey: aKey ifLocked: aBlock [ 
+ODBBTreeDictionary >> removeKey: aKey ifLocked: aBlock [
+
 	| key value |
 	key := self bytesFromKey: aKey.
-	(self basicLockKey: key) ifFalse: [^aBlock value].
-	value := self valueAt: key ifAbsent: [^nil].
-	value isRemoved 
-		ifFalse: 
-			[value removed.
-			changed isNil ifTrue: [changed := self newChangedDictionary].
-			changed at: key put: value.
-			deltaSize := deltaSize - 1]
+	(self basicLockKey: key) ifFalse: [ ^ aBlock value ].
+	value := self valueAt: key ifAbsent: [ ^ nil ].
+	value isRemoved ifTrue: [ ^ self ].
+	
+	value removed.
+	changed ifNil: [ changed := self newChangedDictionary ].
+	changed at: key put: value.
+	deltaSize := deltaSize - 1
 ]
 
 { #category : #public }
@@ -250,16 +250,17 @@ ODBBTreeDictionary >> size [
 ]
 
 { #category : #public }
-ODBBTreeDictionary >> unlockKey: aKey [ 
+ODBBTreeDictionary >> unlockKey: aKey [
+
 	"Unlocks key aKey. Answer <true> if successfull."
 
 	| lock key |
-	dataBaseObject isNil ifTrue: [^true].
+	dataBaseObject ifNil: [ ^ true ].
 	key := self bytesFromKey: aKey.
-	changed isNil ifFalse: [(changed includes: key) ifTrue: [^false]].
+	changed ifNotNil: [ (changed includes: key) ifTrue: [ ^ false ] ].
 	transaction hasLocks ifFalse: [ ^ transaction isGlobalLocked ].
-	lock := transaction keyLockOn: self key: key ifAbsent: [ ^ false ]. 
-	(dataBaseObject unlockKey: key with: lock lockID) ifFalse: [^false].
+	lock := transaction keyLockOn: self key: key ifAbsent: [ ^ false ].
+	(dataBaseObject unlockKey: key with: lock lockID) ifFalse: [ ^ false ].
 	transaction removeLoggedLock: lock.
-	^true
+	^ true
 ]

@@ -22,18 +22,17 @@ ODBIntegerSet >> add: anInteger [
 			bitField at: i put: ((bitField at: i) bitOr: j)]
 ]
 
-{ #category : #public }
+{ #category : #'create/open/close' }
 ODBIntegerSet >> close [
+
 	"Close stream associated with receiver."
 
-	stream isNil 
-		ifFalse: 
-			[(changed and: [currentPage ~~ nil]) 
-				ifTrue: 
-					[stream
-						position: (currentPage bitShift: 12) + self headerLength;
-						putBytesFrom: bitField len: 4096	"2^12=4096"]].
-	^super close
+	stream ifNotNil: [ 
+		(changed and: [ currentPage notNil ]) ifTrue: [ 
+			stream
+				position: (currentPage bitShift: 12) + self headerLength;
+				putBytesFrom: bitField len: 4096 "2^12=4096" ] ].
+	^ super close
 ]
 
 { #category : #accessing }

@@ -9,7 +9,6 @@ Class {
 		'ODBTypeCodes'
 	],
 	#classInstVars : [
-		'typeCodeMapping',
 		'characterEncoder'
 	],
 	#category : #'OmniBase-Streams'
