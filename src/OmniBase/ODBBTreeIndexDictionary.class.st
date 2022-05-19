@@ -149,24 +149,27 @@ ODBBTreeIndexDictionary >> dbPeekNext [
 
 { #category : #private }
 ODBBTreeIndexDictionary >> dbPeekPrevious [
+
 	| iterator assoc valueHolder |
-	dataBaseObject isNil ifTrue: [^nil].
+	dataBaseObject ifNil: [ ^ nil ].
 	iterator := dataBaseObject iterator.
 	"critical section begin"
-	iterator critical: 
-			[iterator goTo: currentKey.
-			
-			[(assoc := iterator getPrevious) isNil ifTrue: [^nil].
-			valueHolder := ODBValueHolder createOn: assoc value.
-			[transaction versionDescriptor versionOK: valueHolder versionNumber] 
-				whileFalse: [valueHolder loadPreviousVersionFrom: transaction oldHolders].
-			valueHolder isRemoved] 
-					whileTrue: []].
+	iterator critical: [ 
+		iterator goTo: currentKey.
+
+		[ 
+		(assoc := iterator getPrevious) ifNil: [ ^ nil ].
+		valueHolder := ODBValueHolder createOn: assoc value.
+		[ 
+		transaction versionDescriptor versionOK: valueHolder versionNumber ] 
+			whileFalse: [ 
+			valueHolder loadPreviousVersionFrom: transaction oldHolders ].
+		valueHolder isRemoved ] whileTrue: [  ] ].
 	"critical section end"
-	^ODBBTreeDictionaryAssociation new 
-		setTransaction: transaction
-		key: (self keyFromBytes: assoc key)
-		value: valueHolder
+	^ ODBBTreeDictionaryAssociation new
+		  setTransaction: transaction
+		  key: (self keyFromBytes: assoc key)
+		  value: valueHolder
 ]
 
 { #category : #public }
@@ -304,38 +307,36 @@ ODBBTreeIndexDictionary >> getLast [
 
 { #category : #enumerating }
 ODBBTreeIndexDictionary >> getNext [
+
 	| a1 a2 |
-	changed isNil 
-		ifFalse: 
-			[[(a1 := changed peekNext) isNil] whileFalse: 
-					[((a2 := self dbPeekNext) notNil and: [a2 < a1]) 
-						ifTrue: 
-							[changed goTo: (currentKey := a2 key).
-							^a2].
-					currentKey := a1 key.
-					changed goToNext.
-					a1 valueHolder isRemoved ifFalse: [^a1]]].
-	(a2 := self dbPeekNext) isNil ifTrue: [^nil].
+	changed ifNotNil: [ 
+		[ (a1 := changed peekNext) isNil ] whileFalse: [ 
+			((a2 := self dbPeekNext) notNil and: [ a2 < a1 ]) ifTrue: [ 
+				changed goTo: (currentKey := a2 key).
+				^ a2 ].
+			currentKey := a1 key.
+			changed goToNext.
+			a1 valueHolder isRemoved ifFalse: [ ^ a1 ] ] ].
+	(a2 := self dbPeekNext) ifNil: [ ^ nil ].
 	currentKey := self bytesFromKey: a2 key.
-	^a2
+	^ a2
 ]
 
 { #category : #enumerating }
 ODBBTreeIndexDictionary >> getPrevious [
+
 	| a1 a2 |
-	changed isNil 
-		ifFalse: 
-			[[(a1 := changed peekPrevious) isNil] whileFalse: 
-					[((a2 := self dbPeekPrevious) notNil and: [a1 < a2]) 
-						ifTrue: 
-							[changed goTo: (currentKey := a2 key).
-							^a2].
-					currentKey := a1 key.
-					changed goToPrevious.
-					a1 valueHolder isRemoved ifFalse: [^a1]]].
-	(a2 := self dbPeekPrevious) isNil ifTrue: [^nil].
+	changed ifNotNil: [ 
+		[ (a1 := changed peekPrevious) isNil ] whileFalse: [ 
+			((a2 := self dbPeekPrevious) notNil and: [ a1 < a2 ]) ifTrue: [ 
+				changed goTo: (currentKey := a2 key).
+				^ a2 ].
+			currentKey := a1 key.
+			changed goToPrevious.
+			a1 valueHolder isRemoved ifFalse: [ ^ a1 ] ] ].
+	(a2 := self dbPeekPrevious) ifNil: [ ^ nil ].
 	currentKey := self bytesFromKey: a2 key.
-	^a2
+	^ a2
 ]
 
 { #category : #public }
@@ -645,21 +646,21 @@ ODBBTreeIndexDictionary >> valueAt: key [
 ]
 
 { #category : #private }
-ODBBTreeIndexDictionary >> valueAt: aKey ifAbsent: aBlock [ 
+ODBBTreeIndexDictionary >> valueAt: aKey ifAbsent: aBlock [
+
 	"Private - Answer correct version of value holder at aKey, evaluate aBlock if absent."
 
 	| value |
-	changed isNil 
-		ifFalse: 
-			[value := changed at: aKey.
-			value isNil ifFalse: [^value]].
-	dataBaseObject isNil ifTrue: [^aBlock value].
-	(value := dataBaseObject iterator goToAndGetCurrentAt: aKey) isNil 
-		ifTrue: [^aBlock value].
+	changed ifNotNil: [ 
+		value := changed at: aKey.
+		value ifNotNil: [ ^ value ] ].
+	dataBaseObject ifNil: [ ^ aBlock value ].
+	(value := dataBaseObject iterator goToAndGetCurrentAt: aKey) ifNil: [ 
+		^ aBlock value ].
 	value := ODBValueHolder createOn: value value.
-	[transaction versionDescriptor versionOK: value versionNumber] 
-		whileFalse: [value loadPreviousVersionFrom: transaction oldHolders].
-	^value
+	[ transaction versionDescriptor versionOK: value versionNumber ] 
+		whileFalse: [ value loadPreviousVersionFrom: transaction oldHolders ].
+	^ value
 ]
 
 { #category : #public }

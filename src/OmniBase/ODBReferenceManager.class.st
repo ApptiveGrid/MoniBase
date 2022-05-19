@@ -80,9 +80,12 @@ ODBReferenceManager >> createMax65536From: bytes [
 
 { #category : #public }
 ODBReferenceManager >> databaseObjectClassID [
-	references isNil ifTrue: [^ODBSerializedDBObjectWithoutReferences classID].
-	references size < 257 ifTrue: [^ODBSerializedDBObject256References classID].
-	references size < 65537 ifTrue: [^ODBSerializedDBObject65536References classID]
+
+	references ifNil: [ ^ ODBSerializedDBObjectWithoutReferences classID ].
+	references size < 257 ifTrue: [ 
+		^ ODBSerializedDBObject256References classID ].
+	references size < 65537 ifTrue: [ 
+		^ ODBSerializedDBObject65536References classID ]
 ]
 
 { #category : #'load/store' }
@@ -118,12 +121,11 @@ ODBReferenceManager >> referencesDo: aBlock [
 ]
 
 { #category : #'load/store' }
-ODBReferenceManager >> saveOnStream: stream [ 
-	references isNil 
-		ifTrue: [stream putPositiveInteger: 0]
-		ifFalse: 
-			[stream putPositiveInteger: references size.
-			references do: [:each | each storeOnStream: stream]]
+ODBReferenceManager >> saveOnStream: stream [
+
+	references ifNil: [ stream putPositiveInteger: 0 ] ifNotNil: [ 
+		stream putPositiveInteger: references size.
+		references do: [ :each | each storeOnStream: stream ] ]
 ]
 
 { #category : #accessing }
