@@ -186,10 +186,10 @@ ODBGarbageCollector >> openOn: anOmniBase [
 ]
 
 { #category : #private }
-ODBGarbageCollector >> progressNotification: aString value: aFraction [ 
-	progressDialog isNil 
-		ifFalse: 
-			[aFraction isNil ifFalse: [progressValue value: 100 * aFraction]].
+ODBGarbageCollector >> progressNotification: aString value: aFraction [
+
+	progressDialog ifNotNil: [ 
+		aFraction ifNotNil: [ progressValue value: 100 * aFraction ] ]
 ]
 
 { #category : #public }

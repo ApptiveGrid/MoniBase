@@ -114,13 +114,13 @@ ODBObjectHolder >> lockWith: lockID [
 { #category : #'load/store' }
 ODBObjectHolder >> makeNewVersion: oldHolders [
 
-        | position |
-        self versionNumber = 0 "new object"
-                ifTrue: [ position := 0]
-                ifFalse: [ position := oldHolders store: contents ].
-        ^(self class createOn: contents shallowCopy)
-                setContainer: container objectID: objectID;
-                previousVersionPosition: position
+	| position |
+	position := self versionNumber = 0
+		            ifTrue: [ 0 ]
+		            ifFalse: [ oldHolders store: contents ]. "new object"
+	^ (self class createOn: contents shallowCopy)
+		  setContainer: container objectID: objectID;
+		  previousVersionPosition: position
 ]
 
 { #category : #accessing }

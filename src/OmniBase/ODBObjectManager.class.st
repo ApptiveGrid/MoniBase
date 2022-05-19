@@ -12,16 +12,17 @@ Class {
 
 { #category : #'create/open/close' }
 ODBObjectManager >> close [
-        "Close object manager and all opened containers."
 
-    | cnt |
-    1 to: containers size do: [:i |
-        (cnt := containers at: i) notNil ifTrue: [
-            cnt close.
-            containers at: i put: nil]].
-    containers := OrderedCollection new.
-    idTable isNil ifFalse: [idTable close].
-    infoFile isNil ifFalse: [infoFile close]
+	"Close object manager and all opened containers."
+
+	| cnt |
+	1 to: containers size do: [ :i | 
+		(cnt := containers at: i) ifNotNil: [ 
+			cnt close.
+			containers at: i put: nil ] ].
+	containers := OrderedCollection new.
+	idTable ifNotNil: [ idTable close ].
+	infoFile ifNotNil: [ infoFile close ]
 ]
 
 { #category : #public }
@@ -32,23 +33,24 @@ ODBObjectManager >> containerAt: containerID [
 ]
 
 { #category : #public }
-ODBObjectManager >> containerAt: containerID ifAbsent: aBlock [ 
+ODBObjectManager >> containerAt: containerID ifAbsent: aBlock [
+
 	"Answer container at containerID. Evaluate aBlock if absent."
 
 	| cont pos |
-	containerID < 1 ifTrue: [^aBlock value].
-	containerID > containers size 
-		ifFalse: [(cont := containers at: containerID) isNil ifFalse: [^cont]].
-	pos := idTable at: containerID ifAbsent: [^aBlock value].
-	pos == 0 ifTrue: [^aBlock value].
-	^self initContainerAt: pos
+	containerID < 1 ifTrue: [ ^ aBlock value ].
+	containerID > containers size ifFalse: [ 
+		(cont := containers at: containerID) ifNotNil: [ ^ cont ] ].
+	pos := idTable at: containerID ifAbsent: [ ^ aBlock value ].
+	pos == 0 ifTrue: [ ^ aBlock value ].
+	^ self initContainerAt: pos
 ]
 
 { #category : #public }
 ODBObjectManager >> containerNamed: containerName [
    "Answer container with containerName or default container, if container is not found."
 
-    ^self containerNamed: containerName ifAbsent: [^self defaultContainer]
+    ^self containerNamed: containerName ifAbsent: [ self defaultContainer ]
 ]
 
 { #category : #public }
@@ -66,10 +68,9 @@ ODBObjectManager >> containerNamed: containerName ifAbsent: aBlock [
 
 { #category : #public }
 ODBObjectManager >> containerNew: aString [
-        "Create new container named aString.
-        Answer container created."
+	"Create new container named aString. Answer container created."
 
-    ^self containerNew: aString path: ''
+	^ self containerNew: aString path: ''
 ]
 
 { #category : #public }
@@ -177,11 +178,10 @@ ODBObjectManager >> createOn: anOmniBase [
 { #category : #public }
 ODBObjectManager >> defaultContainer [
 	"Answer default container."
-
-	| cont |
-	^(cont := containers at: 1) isNil 
-		ifFalse: [cont]
-		ifTrue: [self initContainerAt: (idTable at: 1)]
+	
+	^ (containers at: 1)
+		  ifNil: [ self initContainerAt: (idTable at: 1) ]
+		  ifNotNil: [:cont | cont ]
 ]
 
 { #category : #public }
@@ -203,9 +203,10 @@ ODBObjectManager >> environment [
 
 { #category : #public }
 ODBObjectManager >> flushContainers [
+
 	"Flush all containers before commit."
 
-	containers do: [:each | each isNil ifFalse: [each flushBytes]]
+	containers do: [ :each | each ifNotNil: [ each flushBytes ] ]
 ]
 
 { #category : #public }
