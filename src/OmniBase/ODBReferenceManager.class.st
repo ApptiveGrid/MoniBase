@@ -8,10 +8,11 @@ Class {
 }
 
 { #category : #public }
-ODBReferenceManager >> addReference: aReference [ 
-	references isNil ifTrue: [references := OrderedCollection new].
+ODBReferenceManager >> addReference: aReference [
+
+	references ifNil: [ references := OrderedCollection new ].
 	references add: aReference.
-	^references size
+	^ references size
 ]
 
 { #category : #public }
