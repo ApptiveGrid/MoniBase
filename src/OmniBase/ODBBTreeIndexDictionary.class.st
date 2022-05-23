@@ -299,10 +299,9 @@ ODBBTreeIndexDictionary >> getFirst [
 
 { #category : #public }
 ODBBTreeIndexDictionary >> getLast [
-	| assoc |
+
 	self basicGoTo: ((ByteArray new: keySize) atAllPut: 255).
-	(assoc := self getCurrent) isNil ifTrue: [^self getPrevious].
-	^assoc
+	^ self getCurrent ifNil: [ self getPrevious ]
 ]
 
 { #category : #enumerating }
@@ -404,38 +403,38 @@ ODBBTreeIndexDictionary >> keySize: anInteger [
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> keysFrom: key1 to: key2 do: aBlock [ 
+ODBBTreeIndexDictionary >> keysFrom: key1 to: key2 do: aBlock [
+
 	"Evaluate aBlock for each key in the given key range."
 
 	| toKey assoc |
 	toKey := self bytesFromKey: key2.
 	self goTo: key1.
-	(assoc := self getCurrent) isNil ifTrue: [assoc := self getNext].
-	[assoc isNil] whileFalse: 
-			[(toKey odbIsLessThan: assoc key) ifTrue: [^self].
-			aBlock value: assoc key.
-			assoc := self getNext]
+	(assoc := self getCurrent) ifNil: [ assoc := self getNext ].
+	[ assoc isNil ] whileFalse: [ 
+		(toKey odbIsLessThan: assoc key) ifTrue: [ ^ self ].
+		aBlock value: assoc key.
+		assoc := self getNext ]
 ]
 
 { #category : #accessing }
 ODBBTreeIndexDictionary >> last: anInteger [
 
 	| assoc result |
-	
 	result := OrderedCollection new.
 
 	self basicGoTo: ((ByteArray new: keySize) atAllPut: 255).
-	(assoc := self getCurrent) isNil ifTrue: [
-		assoc := self getPrevious].
+	assoc := self getCurrent ifNil: [ self getPrevious ].
 
-	assoc isNil ifTrue:[^#()].
+	assoc ifNil: [ ^ #(  ) ].
 	result add: assoc value.
-	
-	1 to: (anInteger -1) do:[:i| |current|
+
+	1 to: anInteger - 1 do: [ :i | 
+		| current |
 		current := self getPrevious.
-		current isNil ifTrue: [^result].
-		result add: current value].
-	
+		current ifNil: [ ^ result ].
+		result add: current value ].
+
 	^ result
 ]
 
@@ -459,46 +458,45 @@ ODBBTreeIndexDictionary >> objectCommitted [
 
 { #category : #accessing }
 ODBBTreeIndexDictionary >> oldFromPosition: start to: end [
+
 	"Returns occurrences from start to end."
-	
+
 	"Better implementations of this are very welcome :)"
 
 	| assoc result cursor |
-
 	result := OrderedCollection new.
 	self basicGoTo: (ByteArray new: keySize).
 	assoc := self getFirst.
 
-	start = 1 ifTrue:[
-		result add: assoc value].
-	
+	start = 1 ifTrue: [ result add: assoc value ].
+
 	"jump to the position"
 	cursor := 1.
-	[cursor = start] whileFalse:[
+	[ cursor = start ] whileFalse: [ 
 		assoc := self getNext.
 		cursor := cursor + 1.
-		cursor = start ifTrue:[
-			result add: assoc value]].
+		cursor = start ifTrue: [ result add: assoc value ] ].
 
 	"collect from start to end"
-	start to: end do:[:i| |current|
+	start to: end do: [ :i | 
+		| current |
 		current := self getNext.
-		current isNil ifTrue: [^result].
-		result add: current value].
-	
+		current ifNil: [ ^ result ].
+		result add: current value ].
+
 	^ result
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> removeKey: aKey [ 
+ODBBTreeIndexDictionary >> removeKey: aKey [
+
 	| key value |
 	key := self bytesFromKey: aKey.
-	value := self valueAt: key ifAbsent: [^nil].
-	value isRemoved 
-		ifFalse: 
-			[value removed.
-			changed isNil ifTrue: [changed := self newChangedDictionary].
-			changed at: key put: value]
+	value := self valueAt: key ifAbsent: [ ^ nil ].
+	value isRemoved ifTrue: [ ^ self ].
+	value removed.
+	changed ifNil: [ changed := self newChangedDictionary ].
+	changed at: key put: value
 ]
 
 { #category : #public }
@@ -540,102 +538,110 @@ ODBBTreeIndexDictionary >> size [
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> transactionAssociationsDo: aBlock [ 
+ODBBTreeIndexDictionary >> transactionAssociationsDo: aBlock [
+
 	"Evaluate a block for each association in dictionary.
         New transaction will be created for each key."
 
 	| subTransaction valueHolder versionDescriptor client |
-	dataBaseObject isNil ifTrue: [OmniBase signalError: 'Object has not been stored yet'].
+	dataBaseObject ifNil: [ 
+		OmniBase signalError: 'Object has not been stored yet' ].
 	versionDescriptor := transaction versionDescriptor.
 	client := transaction client.
-	dataBaseObject associationsDo: 
-			[:assoc | 
-			valueHolder := assoc value.
-			[versionDescriptor versionOK: valueHolder versionNumber] 
-				whileFalse: [valueHolder loadPreviousVersionFrom: transaction oldHolders].
-			valueHolder isRemoved 
-				ifFalse: 
-					[subTransaction := client newTransactionFrom: transaction.
-					aBlock value: subTransaction
-						value: (Association key: assoc key
-								value: (subTransaction referenceAt: valueHolder objectID)).
-					subTransaction abort]]
+	dataBaseObject associationsDo: [ :assoc | 
+		valueHolder := assoc value.
+		[ versionDescriptor versionOK: valueHolder versionNumber ] 
+			whileFalse: [ 
+			valueHolder loadPreviousVersionFrom: transaction oldHolders ].
+		valueHolder isRemoved ifFalse: [ 
+			subTransaction := client newTransactionFrom: transaction.
+			aBlock value: subTransaction value: (Association
+					 key: assoc key
+					 value: (subTransaction referenceAt: valueHolder objectID)).
+			subTransaction abort ] ]
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> transactionDo: aBlock [ 
+ODBBTreeIndexDictionary >> transactionDo: aBlock [
+
 	"Evaluate a block for every object in dictionary.
         New transaction will be created for each key+value pair."
 
 	| subTransaction client versionDescriptor |
-	dataBaseObject isNil ifTrue: [OmniBase signalError: 'Object has not been stored yet'].
+	dataBaseObject ifNil: [ 
+		OmniBase signalError: 'Object has not been stored yet' ].
 	versionDescriptor := transaction versionDescriptor.
 	client := transaction client.
-	dataBaseObject valuesDo: 
-			[:valueHolder | 
-			[versionDescriptor versionOK: valueHolder versionNumber] 
-				whileFalse: [valueHolder loadPreviousVersionFrom: transaction oldHolders].
-			valueHolder isRemoved 
-				ifFalse: 
-					[subTransaction := client newTransaction.
-					"take new version descriptor"
-					versionDescriptor := subTransaction versionDescriptor.
-					aBlock value: subTransaction value: (subTransaction objectAt: valueHolder objectID).
-					subTransaction abort]]
+	dataBaseObject valuesDo: [ :valueHolder | 
+		[ versionDescriptor versionOK: valueHolder versionNumber ] 
+			whileFalse: [ 
+			valueHolder loadPreviousVersionFrom: transaction oldHolders ].
+		valueHolder isRemoved ifFalse: [ 
+			subTransaction := client newTransaction.
+			"take new version descriptor"
+			versionDescriptor := subTransaction versionDescriptor.
+			aBlock
+				value: subTransaction
+				value: (subTransaction objectAt: valueHolder objectID).
+			subTransaction abort ] ]
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> transactionReadOnlyDo: aBlock [ 
+ODBBTreeIndexDictionary >> transactionReadOnlyDo: aBlock [
+
 	"Evaluate a block for every object in dictionary.
 	New transaction will be created for each key+value pair."
 
 	| subTransaction versionDescriptor client |
-	dataBaseObject isNil ifTrue: [OmniBase signalError: 'Object has not been stored yet'].
+	dataBaseObject ifNil: [ 
+		OmniBase signalError: 'Object has not been stored yet' ].
 	versionDescriptor := transaction versionDescriptor.
 	client := transaction client.
-	dataBaseObject valuesDo: 
-			[:valueHolder | 
-			[versionDescriptor versionOK: valueHolder versionNumber] 
-				whileFalse: [valueHolder loadPreviousVersionFrom: transaction oldHolders].
-			valueHolder isRemoved 
-				ifFalse: 
-					[subTransaction := client newTransactionFrom: transaction.
-					aBlock value: subTransaction value: (subTransaction objectAt: valueHolder objectID).
-					subTransaction abort]]
+	dataBaseObject valuesDo: [ :valueHolder | 
+		[ versionDescriptor versionOK: valueHolder versionNumber ] 
+			whileFalse: [ 
+			valueHolder loadPreviousVersionFrom: transaction oldHolders ].
+		valueHolder isRemoved ifFalse: [ 
+			subTransaction := client newTransactionFrom: transaction.
+			aBlock
+				value: subTransaction
+				value: (subTransaction objectAt: valueHolder objectID).
+			subTransaction abort ] ]
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> transactionValueBlocksDo: aBlock [ 
+ODBBTreeIndexDictionary >> transactionValueBlocksDo: aBlock [
+
 	"Evaluate a block for every 100 objects in dictionary.
         New transaction is created each time aBlock is evaluated."
 
 	| subTransaction objects count client versionDescriptor |
-	dataBaseObject isNil ifTrue: [OmniBase signalError: 'Object has not been stored yet'].
+	dataBaseObject ifNil: [ 
+		OmniBase signalError: 'Object has not been stored yet' ].
 	client := transaction client.
 	count := 0.
 	objects := OrderedCollection new: 40.
 	subTransaction := client newTransaction.
 	"take new version descriptor"
 	versionDescriptor := subTransaction versionDescriptor.
-	
-	[dataBaseObject valuesDo: 
-			[:valueHolder | 
-			[versionDescriptor versionOK: valueHolder versionNumber] 
-				whileFalse: [valueHolder loadPreviousVersionFrom: transaction oldHolders].
-			valueHolder isRemoved 
-				ifFalse: 
-					[objects add: (subTransaction objectAt: valueHolder objectID).
-					(count := count + 1) == 40 
-						ifTrue: 
-							[aBlock value: subTransaction value: objects.
-							subTransaction abort.
-							count := 0.
-							objects := OrderedCollection new: 40.
-							subTransaction := client newTransaction.
-							"take new version descriptor"
-							versionDescriptor := subTransaction versionDescriptor]]].
-	count > 0 ifTrue: [aBlock value: subTransaction value: objects]] 
-			ensure: [subTransaction abort]
+
+	[ 
+	dataBaseObject valuesDo: [ :valueHolder | 
+		[ versionDescriptor versionOK: valueHolder versionNumber ] 
+			whileFalse: [ 
+			valueHolder loadPreviousVersionFrom: transaction oldHolders ].
+		valueHolder isRemoved ifFalse: [ 
+			objects add: (subTransaction objectAt: valueHolder objectID).
+			(count := count + 1) == 40 ifTrue: [ 
+				aBlock value: subTransaction value: objects.
+				subTransaction abort.
+				count := 0.
+				objects := OrderedCollection new: 40.
+				subTransaction := client newTransaction.
+				"take new version descriptor"
+				versionDescriptor := subTransaction versionDescriptor ] ] ].
+	count > 0 ifTrue: [ aBlock value: subTransaction value: objects ] ] 
+		ensure: [ subTransaction abort ]
 ]
 
 { #category : #private }

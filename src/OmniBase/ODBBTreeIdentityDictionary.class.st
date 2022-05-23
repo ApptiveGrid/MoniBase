@@ -19,21 +19,17 @@ ODBBTreeIdentityDictionary >> at: aKey ifAbsent: aBlock [
 ]
 
 { #category : #public }
-ODBBTreeIdentityDictionary >> at: aKey put: anObject ifLocked: aBlock [ 
+ODBBTreeIdentityDictionary >> at: aKey put: anObject ifLocked: aBlock [
+
 	"Associate aKey with anObject.
 	Evaluate aBlock if aKey has been locked before in some other transaction."
 
-	| oid |
-	^transaction isNil 
-		ifTrue: [newKeys at: aKey odbResolve put: anObject]
-		ifFalse: 
-			[(oid := transaction getObjectIDOrNil: aKey) isNil 
-				ifTrue: [newKeys at: aKey put: anObject]
-				ifFalse: 
-					[super 
-						at: oid
-						put: anObject
-						ifLocked: aBlock]]
+	^ transaction
+		  ifNil: [ newKeys at: aKey odbResolve put: anObject ]
+		  ifNotNil: [ 
+			  (transaction getObjectIDOrNil: aKey)
+				  ifNil: [ newKeys at: aKey put: anObject ]
+				  ifNotNil: [ :oid | super at: oid put: anObject ifLocked: aBlock ] ]
 ]
 
 { #category : #private }
@@ -140,20 +136,15 @@ ODBBTreeIdentityDictionary >> objectCommitted [
 
 { #category : #private }
 ODBBTreeIdentityDictionary >> objectStored [
+
 	"Sent to transaction object when it is stored for the first time.
 	Remove all persistent objects which were put into dictionary before itself was persistent."
 
-	| oid |
 	super objectStored.
-	newKeys copy keysAndValuesDo: 
-			[:eachKey :eachValue | 
-			(oid := transaction getObjectIDOrNil: eachKey) isNil 
-				ifFalse: 
-					[super 
-						at: oid
-						put: eachValue
-						ifLocked: [ODBCannotLockKey signal].
-					newKeys removeKey: eachKey]]
+	newKeys copy keysAndValuesDo: [ :eachKey :eachValue | 
+		(transaction getObjectIDOrNil: eachKey) ifNotNil: [ :oid | 
+			super at: oid put: eachValue ifLocked: [ ODBCannotLockKey signal ].
+			newKeys removeKey: eachKey ] ]
 ]
 
 { #category : #private }

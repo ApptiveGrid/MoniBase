@@ -29,6 +29,16 @@ ODBIdentityDictionary class >> odbDeserialize: deserializer [
 	^ deserializer stream nextODBIdentityDictionary:  self
 ]
 
+{ #category : #enumerating }
+ODBIdentityDictionary >> anySatisfy: aBlock [
+	"Evaluate aBlock with the elements of the receiver.
+	If aBlock returns true for any element return true.
+	Otherwise return false."
+
+	self do: [:each | (aBlock value: each) ifTrue: [^ true]].
+	^ false
+]
+
 { #category : #accessing }
 ODBIdentityDictionary >> associations [
 	"Answer a collection containing the receiver's associations"
