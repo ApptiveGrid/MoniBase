@@ -36,22 +36,24 @@ ODBBTreeIndexDictionary >> at: aKey ifAbsentPut: aBlock [
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> at: aKey put: anObject [ 
+ODBBTreeIndexDictionary >> at: aKey put: anObject [
+
 	"Associate aKey with anObject. Answer anObject."
 
 	| key value |
 	key := self bytesFromKey: aKey.
 	value := self valueAt: key.
 	value object: anObject.
-	changed isNil ifTrue: [changed := self newChangedDictionary].
+	changed ifNil: [ changed := self newChangedDictionary ].
 	changed at: key put: value.
-	^anObject
+	^ anObject
 ]
 
 { #category : #private }
-ODBBTreeIndexDictionary >> basicGoTo: aByteArray [ 
+ODBBTreeIndexDictionary >> basicGoTo: aByteArray [
+
 	currentKey := aByteArray.
-	changed isNil ifFalse: [changed goTo: currentKey]
+	changed ifNotNil: [ changed goTo: currentKey ]
 ]
 
 { #category : #private }
@@ -60,34 +62,37 @@ ODBBTreeIndexDictionary >> bytesFromKey: anObject [
 ]
 
 { #category : #private }
-ODBBTreeIndexDictionary >> commit: serializer [ 
+ODBBTreeIndexDictionary >> commit: serializer [
+
 	"Commit changes."
 
-	dataBaseObject isNil ifTrue: [self commitNew] ifFalse: [self commitChanged]
+	dataBaseObject
+		ifNil: [ self commitNew ]
+		ifNotNil: [ self commitChanged ]
 ]
 
 { #category : #private }
 ODBBTreeIndexDictionary >> commitChanged [
+
 	"Private - Commit changes on an already existing dictionary."
 
 	| changesPackage newValue vn oldHolders |
 	changesPackage := transaction changesPackage.
-	changesPackage add: (ODBDictionaryChanged new transactionObject: self).
+	changesPackage add:
+		(ODBDictionaryChanged new transactionObject: self).
 	vn := transaction versionNumber.
 	oldHolders := transaction oldHolders.
-	changed isNil 
-		ifFalse: 
-			[changed keysAndValuesDo: 
-					[:key :oldValue | 
-					newValue := oldValue makeNewVersion: oldHolders.
-					newValue versionNumber: vn.
-					oldValue isRemoved 
-						ifFalse: [newValue objectID: (transaction getObjectID: newValue object)].
-					changesPackage add: ((ODBAssociationChanged new)
-								key: key;
-								setObjectID: holder objectID transactionObject: self;
-								oldValue: oldValue;
-								newValue: newValue)]]
+	changed ifNotNil: [ 
+		changed keysAndValuesDo: [ :key :oldValue | 
+			newValue := oldValue makeNewVersion: oldHolders.
+			newValue versionNumber: vn.
+			oldValue isRemoved ifFalse: [ 
+				newValue objectID: (transaction getObjectID: newValue object) ].
+			changesPackage add: (ODBAssociationChanged new
+					 key: key;
+					 setObjectID: holder objectID transactionObject: self;
+					 oldValue: oldValue;
+					 newValue: newValue) ] ]
 ]
 
 { #category : #private }
@@ -127,24 +132,27 @@ ODBBTreeIndexDictionary >> databaseObjectClass [
 
 { #category : #private }
 ODBBTreeIndexDictionary >> dbPeekNext [
+
 	| iterator assoc valueHolder |
-	dataBaseObject isNil ifTrue: [^nil].
+	dataBaseObject ifNil: [ ^ nil ].
 	iterator := dataBaseObject iterator.
 	"critical section begin"
-	iterator critical: 
-			[iterator goTo: currentKey.
-			
-			[(assoc := iterator getNext) isNil ifTrue: [^nil].
-			valueHolder := ODBValueHolder createOn: assoc value.
-			[transaction versionDescriptor versionOK: valueHolder versionNumber] 
-				whileFalse: [valueHolder loadPreviousVersionFrom: transaction oldHolders].
-			valueHolder isRemoved] 
-					whileTrue: []].
+	iterator critical: [ 
+		iterator goTo: currentKey.
+
+		[ 
+		(assoc := iterator getNext) ifNil: [ ^ nil ].
+		valueHolder := ODBValueHolder createOn: assoc value.
+		[ 
+		transaction versionDescriptor versionOK: valueHolder versionNumber ] 
+			whileFalse: [ 
+			valueHolder loadPreviousVersionFrom: transaction oldHolders ].
+		valueHolder isRemoved ] whileTrue: [  ] ].
 	"critical section end"
-	^ODBBTreeDictionaryAssociation new 
-		setTransaction: transaction
-		key: (self keyFromBytes: assoc key)
-		value: valueHolder
+	^ ODBBTreeDictionaryAssociation new
+		  setTransaction: transaction
+		  key: (self keyFromBytes: assoc key)
+		  value: valueHolder
 ]
 
 { #category : #private }
@@ -195,35 +203,37 @@ ODBBTreeIndexDictionary >> first [
 ODBBTreeIndexDictionary >> first: anInteger [
 
 	| assoc result |
-	
 	result := OrderedCollection new.
 	self basicGoTo: (ByteArray new: keySize).
 	assoc := self getNext.
-	assoc isNil ifTrue:[^#()].
+	assoc ifNil: [ ^ #(  ) ].
 	result add: assoc value.
-	
-	1 to: (anInteger -1) do:[:i| |current|
+
+	1 to: anInteger - 1 do: [ :i | 
+		| current |
 		current := self getNext.
-		current isNil ifTrue: [^result].
-		result add: current value].
-	
+		current ifNil: [ ^ result ].
+		result add: current value ].
+
 	^ result
 ]
 
 { #category : #public }
-ODBBTreeIndexDictionary >> forKeysStartingWith: aStringOrByteArray do: aBlock [ 
+ODBBTreeIndexDictionary >> forKeysStartingWith: aStringOrByteArray do: aBlock [
+
 	"Evaluate aOneArgumentBlock for every key that starts with aStringOrByteArray."
 
 	| fromKey toKey assoc |
 	fromKey := self bytesFromKey: aStringOrByteArray.
 	toKey := fromKey copy.
-	aStringOrByteArray size + 1 to: keySize do: [:i | toKey at: i put: 255].
+	aStringOrByteArray size + 1 to: keySize do: [ :i | 
+	toKey at: i put: 255 ].
 	self basicGoTo: fromKey.
-	(assoc := self getCurrent) isNil ifTrue: [assoc := self getNext].
-	[assoc isNil] whileFalse: 
-			[(toKey odbIsLessThan: assoc key) ifTrue: [^self].
-			aBlock value: assoc value.
-			assoc := self getNext]
+	(assoc := self getCurrent) ifNil: [ assoc := self getNext ].
+	[ assoc isNil ] whileFalse: [ 
+		(toKey odbIsLessThan: assoc key) ifTrue: [ ^ self ].
+		aBlock value: assoc value.
+		assoc := self getNext ]
 ]
 
 { #category : #accessing }

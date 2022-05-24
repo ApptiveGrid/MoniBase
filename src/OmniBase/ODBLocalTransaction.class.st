@@ -169,15 +169,16 @@ ODBLocalTransaction >> lock: anObject [
 
 { #category : #private }
 ODBLocalTransaction >> lockID [
+
 	"Private - Answer unique lock ID. Create transaction 
 	file, if no locks have been set before. Answer <nil> 
 	if database is globally locked by another user and no 
 	locks can currently be set."
 
-	self hasLocks 
-		ifFalse: 
-			[(transactionFile := client newTransactionFileFor: self) isNil ifTrue: [^nil] ].
-	^transactionFile transactionID
+	self hasLocks ifFalse: [ 
+		(transactionFile := client newTransactionFileFor: self) ifNil: [ 
+			^ nil ] ].
+	^ transactionFile transactionID
 ]
 
 { #category : #public }
@@ -186,21 +187,23 @@ ODBLocalTransaction >> makePersistent: anObject [
 ]
 
 { #category : #public }
-ODBLocalTransaction >> makePersistent: anObject in: aContainerOrContainerName [ 
+ODBLocalTransaction >> makePersistent: anObject in: aContainerOrContainerName [
+
 	"Store anObject into specified container if it is not stored yet, else do nothing.
 	Answer anObject."
 
 	| container |
-	anObject odbObjectID isNil ifFalse: [^anObject].
-	self getTransactionObject: anObject
-		ifAbsent: 
-			[(aContainerOrContainerName isKindOf: String)
-				ifTrue: 
-					[container := dbConnection objectManager containerNamed: aContainerOrContainerName
-								ifAbsent: [OmniBase signalError: 'Container does not exist']]
-				ifFalse: [container := aContainerOrContainerName].
-			self storeNewObject: anObject inContainer: container].
-	^anObject
+	anObject odbObjectID ifNotNil: [ ^ anObject ].
+	self getTransactionObject: anObject ifAbsent: [ 
+		container := (aContainerOrContainerName isKindOf: String)
+			             ifTrue: [ 
+				             dbConnection objectManager
+					             containerNamed: aContainerOrContainerName
+					             ifAbsent: [ 
+					             OmniBase signalError: 'Container does not exist' ] ]
+			             ifFalse: [ aContainerOrContainerName ].
+		self storeNewObject: anObject inContainer: container ].
+	^ anObject
 ]
 
 { #category : #public }
@@ -319,7 +322,7 @@ ODBLocalTransaction >> removeLock: aLock [
 	"Private - Remove aLock from collection of set locks."
 
 	lockRegistry removeLock: aLock.
-	locks remove: aLock ifAbsent: [  ]
+	locks remove: aLock ifAbsent: nil
 ]
 
 { #category : #private }
