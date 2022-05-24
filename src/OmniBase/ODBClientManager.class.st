@@ -20,25 +20,22 @@ ODBClientManager >> addOpenedClient: aClient [
 ]
 
 { #category : #public }
-ODBClientManager >> clientAt: clientID [ 
+ODBClientManager >> clientAt: clientID [
+
 	"Answer client object for clientID or <nil> if none."
 
 	| client |
 	client := clients at: clientID.
-	client isNil 
-		ifTrue: 
-			[client := ODBTerminatedClient new openOn: self clientID: clientID.
-			client isNil 
-				ifTrue: 
-					[client := ODBForeignClient new openOn: self clientID: clientID.
-					client isNil 
-						ifTrue: 
-							[(self clientFileName: clientID) exists 
-								ifFalse: 
-									[self
-										removePending: clientID;
-										removed: clientID]]]].
-	^client
+	client ifNil: [ 
+		client := ODBTerminatedClient new openOn: self clientID: clientID.
+		client ifNil: [ 
+			client := ODBForeignClient new openOn: self clientID: clientID.
+			client ifNil: [ 
+				(self clientFileName: clientID) exists ifFalse: [ 
+					self
+						removePending: clientID;
+						removed: clientID ] ] ] ].
+	^ client
 ]
 
 { #category : #private }
