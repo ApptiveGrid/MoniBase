@@ -213,15 +213,15 @@ ODBFile >> waitForLockAt: pos length: length whileWaitingDo: aBlock [
 
 	| startTime currentTime |
 	(stream lockAt: pos length: length) ifTrue: [ ^ self ].
-	
-	startTime := Time totalSeconds.
-	[ stream lockAt: pos length: length ] whileFalse: [ 
-		aBlock value.
-		currentTime := Time totalSeconds.
-		currentTime - startTime < self timeOutLength ifFalse: [ 
-			ODBLockNotification signal
-				ifTrue: [ startTime := currentTime ]
-				ifFalse: [ ^ ODBCannotLock signal ] ] ]
+
+ 	"If getting a lock is not successfull, we retry for #timeOutLength seconds"
+
+ 	startTime := Time totalSeconds.
+ 	[ stream lockAt: pos length: length ] whileFalse: [ 
+ 		aBlock value.
+ 		currentTime := Time totalSeconds.
+ 		currentTime - startTime < self timeOutLength ifFalse: [ 
+ 			^ ODBCannotLock signal ] ]
 ]
 
 { #category : #private }
