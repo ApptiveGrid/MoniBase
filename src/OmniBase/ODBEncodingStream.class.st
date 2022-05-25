@@ -349,7 +349,7 @@ ODBEncodingStream >> nextPutInteger: anInteger [
 { #category : #writing }
 ODBEncodingStream >> nextPutInternalReference: anInteger [ 
 	stream
-		putByte: ODBInternalReference;
+		putByte: ODBInternalReferenceCode;
 		putPositiveInteger: anInteger
 ]
 

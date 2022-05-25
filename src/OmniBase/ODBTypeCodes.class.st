@@ -15,7 +15,7 @@ Class {
 		'ODBFloatCode',
 		'ODBFractionCode',
 		'ODBIdentityDictionaryCode',
-		'ODBInternalReference',
+		'ODBInternalReferenceCode',
 		'ODBLargeNegativeIntegerCode',
 		'ODBLargePositiveIntegerCode',
 		'ODBMessageCode',
@@ -58,7 +58,7 @@ ODBTypeCodes class >> initializeTypeCodeMapping [
 	TypeCodeMapping
 		at: 2                                    put: ODBNewObjectNewClass;
 		at: 3                                    put: ODBNewObject;
-		at: ODBInternalReference                 put: ODBExistingObject;
+		at: ODBInternalReferenceCode             put: ODBExistingObject;
 		at: ODBExternalReferenceCode             put: ODBExternalReference;
 		at: 6                                    put: ODBClassManagerForSerialization;
 		at: ODBLargePositiveIntegerCode          put: ODBLargePositiveInteger;
@@ -128,7 +128,7 @@ ODBTypeCodes class >> initializeTypeCodeMapping [
 ODBTypeCodes class >> initializeTypeCodes [
 	<script>
 	"1 .. 3" 
-	ODBInternalReference := 4.
+	ODBInternalReferenceCode := 4.
 	ODBExternalReferenceCode := 5.
 	"6 .. 10"
 	ODBLargePositiveIntegerCode := 11.

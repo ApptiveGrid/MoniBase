@@ -674,7 +674,7 @@ ODBSerializationTest >> testSerializationStringTwice [
 	"First String"
 	self assert: (serialized at: 9) equals: ODBSmallStringBaseCode + 1.
 	"Second String is stored as an internal reference"
-	self assert: (serialized at: 11) equals: ODBInternalReference.
+	self assert: (serialized at: 11) equals: ODBInternalReferenceCode.
 	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
@@ -689,7 +689,7 @@ ODBSerializationTest >> testSerializationStringTwice [
 	"First String"
 	self assert: (serialized at: 9) equals: ODBSmallStringBaseCode + 5.
 	"Second String is stored as an internal reference"
-	self assert: (serialized at: 15) equals: ODBInternalReference.
+	self assert: (serialized at: 15) equals: ODBInternalReferenceCode.
 	
 
 	
@@ -706,7 +706,7 @@ ODBSerializationTest >> testSerializationStringTwice [
 	"First String"
 	self assert: (serialized at: 9) equals: ODBStringCode.
 	"Second String is stored as an internal reference"
-	self assert: (serialized at: 34) equals: ODBInternalReference.
+	self assert: (serialized at: 34) equals: ODBInternalReferenceCode.
 	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object.
