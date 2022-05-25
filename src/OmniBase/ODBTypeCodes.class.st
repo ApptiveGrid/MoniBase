@@ -20,9 +20,9 @@ Class {
 		'ODBLargePositiveIntegerCode',
 		'ODBMessageCode',
 		'ODBMessageSendCode',
-		'ODBMinusOne',
+		'ODBMinusOneCode',
 		'ODBMinusThreeCode',
-		'ODBMinusTwo',
+		'ODBMinusTwoCode',
 		'ODBODBIdentityDictionaryCode',
 		'ODBOrderedCollectionCode',
 		'ODBPersistentDictionaryCode',
@@ -39,7 +39,7 @@ Class {
 		'ODBTrueCode',
 		'ODBUndefinedObjectCode',
 		'ODBWideStringCode',
-		'typeCodeMapping'
+		'TypeCodeMapping'
 	],
 	#category : #'OmniBase-Base'
 }
@@ -54,8 +54,8 @@ ODBTypeCodes class >> initialize [
 ODBTypeCodes class >> initializeTypeCodeMapping [
 	<script>
 
-	typeCodeMapping := Array new: 255.
-	typeCodeMapping
+	TypeCodeMapping := Array new: 255.
+	TypeCodeMapping
 		at: 2                                    put: ODBNewObjectNewClass;
 		at: 3                                    put: ODBNewObject;
 		at: ODBInternalReference                 put: ODBExistingObject;
@@ -105,8 +105,8 @@ ODBTypeCodes class >> initializeTypeCodeMapping [
 		at: ODBSmallPositiveIntegerBaseCode + 15 put: 15;
 		at: ODBSmallPositiveIntegerBaseCode + 16 put: 16;
 		at: ODBMinusThreeCode                    put: -3;
-		at: ODBMinusTwo                          put: -2;
-		at: ODBMinusOne                          put: -1;
+		at: ODBMinusTwoCode                      put: -2;
+		at: ODBMinusOneCode                      put: -1;
 		at: ODBSmallStringBaseCode               put: ODBEmptyString;
 		at: ODBSmallStringBaseCode + 1           put: ODB1CharacterString;
 		at: ODBSmallStringBaseCode + 2           put: (ODBnCharacterString length: 2);
@@ -164,8 +164,8 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBSmallPositiveIntegerBaseCode := 50. 
 	"50 .. 64 integers 0 .. 16"
 	ODBMinusThreeCode := 67.
-	ODBMinusTwo := 68.
-	ODBMinusOne := 69.
+	ODBMinusTwoCode := 68.
+	ODBMinusOneCode := 69.
 	"small strings of size small than 10 bytes are written with type 70 + size of string"
 	ODBSmallStringBaseCode := 70.
 	"70 .. 79 small strings"

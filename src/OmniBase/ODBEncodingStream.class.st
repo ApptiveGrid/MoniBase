@@ -506,7 +506,7 @@ ODBEncodingStream >> nextnCharacterStringSize: size [
 
 { #category : #reading }
 ODBEncodingStream >> odbNextObject [
-	^ (typeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
+	^ (TypeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
 ]
 
 { #category : #accessing }

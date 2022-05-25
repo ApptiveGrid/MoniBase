@@ -594,8 +594,8 @@ ODBSerializationTest >> testSerializationSmallInteger [
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: -3.
 	
-	self assert: ((ODBSerializer serializeToBytes: -1) at: 7) equals: ODBMinusOne.
-		self assert: ((ODBSerializer serializeToBytes: -2) at: 7) equals: ODBMinusTwo.
+	self assert: ((ODBSerializer serializeToBytes: -1) at: 7) equals: ODBMinusOneCode.
+	self assert: ((ODBSerializer serializeToBytes: -2) at: 7) equals: ODBMinusTwoCode.
 ]
 
 { #category : #'tests-encoded-subclasses' }
