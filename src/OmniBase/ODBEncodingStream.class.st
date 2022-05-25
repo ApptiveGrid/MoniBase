@@ -349,7 +349,7 @@ ODBEncodingStream >> nextPutInteger: anInteger [
 { #category : #writing }
 ODBEncodingStream >> nextPutInternalReference: anInteger [ 
 	stream
-		putByte: ODBInternalReference;
+		putByte: ODBInternalReferenceCode;
 		putPositiveInteger: anInteger
 ]
 
@@ -506,7 +506,7 @@ ODBEncodingStream >> nextnCharacterStringSize: size [
 
 { #category : #reading }
 ODBEncodingStream >> odbNextObject [
-	^ (typeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
+	^ (TypeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
 ]
 
 { #category : #accessing }
