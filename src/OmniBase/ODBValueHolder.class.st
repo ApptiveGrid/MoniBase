@@ -45,17 +45,17 @@ ODBValueHolder >> loadPreviousVersionFrom: oldHolders [
 ]
 
 { #category : #public }
-ODBValueHolder >> makeNewVersion: oldHolders [ 
+ODBValueHolder >> makeNewVersion: oldHolders [
 	"Store receiver to oldHolders and make new instance
 	of receiver class that points to receiver in oldKeys."
 
 	| position |
-	self versionNumber = 0 
-		ifTrue: [position := 0]
-		ifFalse: [position := oldHolders store: contents].
-	^(self class new)
-		previousVersionPosition: position;
-		updateOn: self
+	position := self versionNumber = 0
+		            ifTrue: [ 0 ]
+		            ifFalse: [ oldHolders store: contents ].
+	^ self class new
+		  previousVersionPosition: position;
+		  updateOn: self
 ]
 
 { #category : #'public/unclassified' }
@@ -112,13 +112,12 @@ ODBValueHolder >> removed [
 ]
 
 { #category : #public }
-ODBValueHolder >> updateOn: aValueHolder [ 
-	"Private - Make new version from aValueHolder."
+ODBValueHolder >> updateOn: aValueHolder [
 
-	(removed := aValueHolder isRemoved) 
-		ifFalse: 
-			[object := aValueHolder object.
-			objectSet := true]
+	(removed := aValueHolder isRemoved) ifTrue: [ ^ self ].
+	
+	object := aValueHolder object.
+	objectSet := true
 ]
 
 { #category : #'public/accessing' }

@@ -175,11 +175,10 @@ ODBBTreePage >> insertSplitItem: item leftNext: leftNext rightNext: rightNext [
 
 { #category : #'public/unclassified' }
 ODBBTreePage >> leftNext [
-        "Answer leftmost pointer to next page. And 
-        set indexOnPage to zero."
+	"Answer leftmost pointer to next page. And set indexOnPage to zero."
 
-    indexOnPage := 0.
-    ^self nextAt: 0
+	indexOnPage := 0.
+	^ self nextAt: 0
 ]
 
 { #category : #private }
@@ -263,7 +262,8 @@ ODBBTreePage >> position: anInteger [
 ]
 
 { #category : #public }
-ODBBTreePage >> positionToCachedKey: aKey [ 
+ODBBTreePage >> positionToCachedKey: aKey [
+
 	"Search for aKey on page. Answer <true> if found. 
         If not answer position of child page where aKey could 
         be located. Answer 0 if this is a leaf page. Answer 
@@ -274,22 +274,24 @@ ODBBTreePage >> positionToCachedKey: aKey [
 	min := 0.
 	max := n := (flag := contents at: 1) bitAnd: 127.
 	indexOnPage := max bitShift: -1.
-	n == 0 ifTrue: [^nil].
-	
-	[(result := iterator 
-				isKey: contents
-				at: indexOnPage * itemLength + 1
-				lessThan: aKey) isNil 
-		ifTrue: [^true].
-	result ifTrue: [min := indexOnPage + 1] ifFalse: [max := indexOnPage].
-	min == max] 
-			whileFalse: [indexOnPage := min + max bitShift: -1].
-	(indexOnPage := min) == n ifTrue: [^nil].
-	indexOnPage == 0 ifTrue: [^nil].
+	n == 0 ifTrue: [ ^ nil ].
+
+	[ 
+	(result := iterator
+		           isKey: contents
+		           at: indexOnPage * itemLength + 1
+		           lessThan: aKey) ifNil: [ ^ true ].
+	result
+		ifTrue: [ min := indexOnPage + 1 ]
+		ifFalse: [ max := indexOnPage ].
+	min == max ] whileFalse: [ indexOnPage := min + max bitShift: -1 ].
+	(indexOnPage := min) == n ifTrue: [ ^ nil ].
+	indexOnPage == 0 ifTrue: [ ^ nil ].
 	"Optimization for: ^self nextAt: indexOnPage"
-	flag > 127 ifTrue: [^0].
+	flag > 127 ifTrue: [ ^ 0 ].
 	"PAGE SIZE=32 (bitShift: 5)"
-	^self uLongAtOffset: (itemLength bitShift: 5) + 1 + (indexOnPage bitShift: 2)
+	^ self uLongAtOffset:
+		  (itemLength bitShift: 5) + 1 + (indexOnPage bitShift: 2)
 ]
 
 { #category : #public }
@@ -336,7 +338,7 @@ ODBBTreePage >> previousAssociation [
 
 { #category : #'public/unclassified' }
 ODBBTreePage >> previousPage [
-        "Answer pointer to nextPage or <nil> if none."
+    "Answer pointer to nextPage or <nil> if none."
 
     indexOnPage < 0 ifTrue: [^nil].
     ^self nextAt: indexOnPage
