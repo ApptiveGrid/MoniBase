@@ -291,6 +291,8 @@ ODBSerializationTest >> testSerializationFractionTwice [
 	"Second Fraction, reference to the first"
 	self assert: (serialized at: 12) equals: ODBInternalReferenceCode.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	
+	"identity is preserved"
 	self assert: materialized first identicalTo: materialized second.
 	self assert: materialized equals: object
 ]
@@ -452,7 +454,7 @@ ODBSerializationTest >> testSerializationObject [
 ODBSerializationTest >> testSerializationObjectTwice [
 	| object array serialized materialized |
 	
-	"try to serialize an object that references twice the boxed floats"
+	"try to serialize an object that references twice one simple object"
 	object := Object new.
 	array := {object . object}.
 
@@ -462,11 +464,12 @@ ODBSerializationTest >> testSerializationObjectTwice [
 	self assert: (serialized at: 17) equals: ODBArrayCode.
 	"array of size 2"
 	self assert: (serialized at: 18) equals: 2.
-	"here the object ist stored"
+	"here the object ist stored (not tested)"
 	"Then we get a reference to the second instance"
 	self assert: (serialized at: 21) equals: ODBInternalReferenceCode.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: array first identicalTo: array second.
+	"identity is preserved"
 	self assert: materialized first identicalTo: materialized second.
 ]
 
@@ -533,6 +536,7 @@ ODBSerializationTest >> testSerializationScaledDecimalTwice [
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	
 	self assert: object first identicalTo: object second.
+	"identity is preserved"
 	self assert: materialized first identicalTo: materialized second.
 	self assert: materialized equals: object.
 ]
