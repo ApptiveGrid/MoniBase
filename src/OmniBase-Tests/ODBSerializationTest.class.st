@@ -224,6 +224,23 @@ ODBSerializationTest >> testSerializationClass [
 	self assert: materialized  equals: Point.
 ]
 
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationCompiledMethodLayout [
+	| object serialized materialized |
+	self skip.
+	"Not yet implemented"
+	self flag: #TODO.
+	"We use CompiledMethod as an exampe of a class with a CompiledMethodLayout"
+	object := (OrderedCollection>>#do:) copy.
+	
+	self assert: object class classLayout class equals: CompiledMethodLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class classLayout class equals: CompiledMethodLayout.
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationDate [
 	| object serialized materialized |
@@ -246,6 +263,42 @@ ODBSerializationTest >> testSerializationDictionary [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: object
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationDoubleByteLayout [
+	| object serialized materialized |
+	"We use DoubleByteArray as an exampe of a class with a DoubleByteLayout but not specially encoded"
+	object := DoubleByteArray newFrom: #(10 20 30 40).
+	
+	self assert: object class classLayout class equals: DoubleByteLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: DoubleByteArray.
+	self assert: materialized class classLayout class equals: DoubleByteLayout.
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationDoubleWordLayout [
+	| object serialized materialized |
+	"We use DoubleWordArray as an exampe of a class with a DoubleWordLayout but not specially encoded"
+	object := DoubleWordArray newFrom: #(10 20 30 40).
+	
+	self assert: object class classLayout class equals: DoubleWordLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: DoubleWordArray.
+	self assert: materialized class classLayout class equals: DoubleWordLayout.
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationEphemeronLayout [
+	"Emphemeron classes are not yet used (no example in Pharo11), thus we do not support them yet"
+	self flag: #TODO
 ]
 
 { #category : #'tests-layouts' }
@@ -795,6 +848,21 @@ ODBSerializationTest >> testSerializationUndefindedObject [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: nil
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationVariableLayout [
+	| object serialized materialized |
+	"All Immediate classes are specially encoded, to have a test for every layout, use Character here"
+	object := $a.
+	
+	self assert: object class classLayout class equals: ImmediateLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: object.
+	self assert: materialized class equals: Character.
+	self assert: materialized class classLayout class equals: ImmediateLayout.
 ]
 
 { #category : #'tests-encoded-subclasses' }
