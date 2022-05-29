@@ -156,9 +156,10 @@ ODBEncodingStream >> nextDoubleByteCharacter [
 
 { #category : #reading }
 ODBEncodingStream >> nextFraction: aClass [
-	^ aClass 
-		numerator: stream getInteger
-		denominator: stream getInteger
+	^ readerWriter register:
+		  (aClass
+			   numerator: stream getInteger
+			   denominator: stream getInteger)
 ]
 
 { #category : #reading }
