@@ -32,7 +32,7 @@ Integer >> odbBasicSerialize: serializer [
 
 { #category : #'*omnibase' }
 Integer >> odbSerialize: serializer [
-	"Small Integers are immediate object, no registration needed"
-	self flag: #TODO. "Explain why we do not register Large Integers?"
+	"Small Integers are immediate objects, no registration needed"
+	self isLarge ifTrue: [ (serializer register: self) ifTrue: [^self] ].
 	self odbBasicSerialize: serializer
 ]

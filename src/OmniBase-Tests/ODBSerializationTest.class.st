@@ -401,7 +401,7 @@ ODBSerializationTest >> testSerializationLargeInteger [
 	
 	object := SmallInteger maxVal + 1.
 	serialized := ODBSerializer serializeToBytes: object.
-	self assert: serialized equals: #[0 0 0 0 0 0 11 128 128 128 128 128 128 128 128 16].
+	self assert: serialized equals: #[0 0 1 0 0 0 11 128 128 128 128 128 128 128 128 16].
 	self assert: (serialized at: 7) equals: ODBLargePositiveIntegerCode.
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
@@ -410,7 +410,7 @@ ODBSerializationTest >> testSerializationLargeInteger [
 	"Negative"
 	object := SmallInteger minVal - 1.
 	serialized := ODBSerializer serializeToBytes: object.
-	self assert: serialized equals: #[0 0 0 0 0 0 12 129 128 128 128 128 128 128 128 16].
+	self assert: serialized equals: #[0 0 1 0 0 0 12 129 128 128 128 128 128 128 128 16].
 		self assert: (serialized at: 7) equals: ODBLargeNegativeIntegerCode.
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
@@ -432,8 +432,8 @@ ODBSerializationTest >> testSerializationLargeIntegerTwice [
 	self assert: (serialized at: 7) equals: ODBArrayCode.
 	"First LargeInteger"
 	self assert: (serialized at: 9) equals: ODBLargePositiveIntegerCode.
-	"Second LargeInteger. Should this be a reference?"
-	self assert: (serialized at: 19) equals: ODBLargePositiveIntegerCode.
+	"Second LargeInteger, reference to the first"
+	self assert: (serialized at: 19) equals: ODBInternalReferenceCode.
 	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: object first identicalTo: object second.
@@ -454,6 +454,8 @@ ODBSerializationTest >> testSerializationLargeIntegerTwice [
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: object first identicalTo: object second.
 	self assert: materialized equals: object.
+	"identity is preserved"
+	self assert: materialized first identicalTo: materialized second.
 	
 ]
 

@@ -164,12 +164,23 @@ ODBEncodingStream >> nextFraction: aClass [
 
 { #category : #reading }
 ODBEncodingStream >> nextLargeNegativeInteger [
-	^ 0 - stream getPositiveInteger
+	| integer |
+	"Large Integers are normal objects (need to be registered), small integers are immediate"
+	integer := 0 - stream getPositiveInteger.
+	^ integer isLarge
+		  ifTrue: [ readerWriter register: integer ]
+		  ifFalse: [ integer ]
 ]
 
 { #category : #reading }
 ODBEncodingStream >> nextLargePositiveInteger [
-	^ stream getPositiveInteger
+
+	| integer |
+	"Large Integers are normal objects (need to be registered), small integers are immediate"
+	integer := stream getPositiveInteger.
+	^ integer isLarge
+		  ifTrue: [ readerWriter register: integer ]
+		  ifFalse: [ integer ]
 ]
 
 { #category : #reading }
