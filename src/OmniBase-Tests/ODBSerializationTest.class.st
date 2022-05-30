@@ -269,7 +269,7 @@ ODBSerializationTest >> testSerializationFraction [
 	object := 1/2.
 	self assert: object class equals: Fraction.
 	serialized := ODBSerializer serializeToBytes: object.
-	self assert: serialized equals: #[0 0 0 0 0 0 39 2 4].
+	self assert: serialized equals: #[0 0 1 0 0 0 39 2 4].
 	self assert: (serialized at: 7) equals: ODBFractionCode.
 	
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
@@ -288,10 +288,12 @@ ODBSerializationTest >> testSerializationFractionTwice [
 	self assert: (serialized at: 7) equals: ODBArrayCode.
 	"First Fraction"
 	self assert: (serialized at: 9) equals: ODBFractionCode.
-	"Second Fraction. Should this be a reference?"
-	self assert: (serialized at: 12) equals: ODBFractionCode.
+	"Second Fraction, reference to the first"
+	self assert: (serialized at: 12) equals: ODBInternalReferenceCode.
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
-	self assert: object first identicalTo: object second.
+	
+	"identity is preserved"
+	self assert: materialized first identicalTo: materialized second.
 	self assert: materialized equals: object
 ]
 
@@ -448,6 +450,29 @@ ODBSerializationTest >> testSerializationObject [
 	self assert: materialized class equals: Object
 ]
 
+{ #category : #'tests-twice' }
+ODBSerializationTest >> testSerializationObjectTwice [
+	| object array serialized materialized |
+	
+	"try to serialize an object that references twice one simple object"
+	object := Object new.
+	array := {object . object}.
+
+	serialized := ODBSerializer serializeToBytes: array.
+	
+	"First the Array"
+	self assert: (serialized at: 17) equals: ODBArrayCode.
+	"array of size 2"
+	self assert: (serialized at: 18) equals: 2.
+	"here the object ist stored (not tested)"
+	"Then we get a reference to the second instance"
+	self assert: (serialized at: 21) equals: ODBInternalReferenceCode.
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: array first identicalTo: array second.
+	"identity is preserved"
+	self assert: materialized first identicalTo: materialized second.
+]
+
 { #category : #tests }
 ODBSerializationTest >> testSerializationOrderedCollection [
 	| object serialized materialized |
@@ -480,6 +505,40 @@ ODBSerializationTest >> testSerializationProcessSchedulerCode [
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
 	self assert: materialized equals: Processor
+]
+
+{ #category : #'tests-encoded-subclasses' }
+ODBSerializationTest >> testSerializationScaledDecimal [
+	"ScaledDecimal is a subclass of Fraction, make sure it works"
+
+	| object serialized materialized |
+	object := 10s2.
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	"this is NOT serialized using ODBFractionCode"
+	self deny: (serialized at: 7) equals: ODBFractionCode.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized class equals: ScaledDecimal.
+	self assert: materialized equals: object
+]
+
+{ #category : #'tests-twice' }
+ODBSerializationTest >> testSerializationScaledDecimalTwice [
+	| scaledDecimal object serialized materialized |
+	
+	"try to serialize an object that references twice the boxed floats"
+	scaledDecimal := 10s2.
+	object := {scaledDecimal . scaledDecimal}.
+
+	serialized := ODBSerializer serializeToBytes: object.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	
+	self assert: object first identicalTo: object second.
+	"identity is preserved"
+	self assert: materialized first identicalTo: materialized second.
+	self assert: materialized equals: object.
 ]
 
 { #category : #'tests-hashed' }
