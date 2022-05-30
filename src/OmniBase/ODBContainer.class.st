@@ -28,11 +28,10 @@ ODBContainer >> addByteStorageRequest: anODBByteStorageRequest [
 { #category : #accessing }
 ODBContainer >> at: index [
 
-	| bytes |
-	(bytes := indexFile at: index) ifNil: [ ^ nil ].
-	^ (ODBObjectHolder createOn: bytes)
-		  setContainer: self
-		  objectID: (ODBObjectID containerID: id index: index)
+	^ (indexFile at: index) ifNotNil: [ :bytes | 
+		  (ODBObjectHolder createOn: bytes)
+			  setContainer: self
+			  objectID: (ODBObjectID containerID: id index: index) ]
 ]
 
 { #category : #accessing }
@@ -225,22 +224,21 @@ ODBContainer >> localDefaultObjectSpace [
 { #category : #private }
 ODBContainer >> lockDataFile [
 
-    | currentSpace defaultSpace |
-
-    currentSpace := activeDataFile == dataFileA ifTrue: [0] ifFalse: [1].
-    defaultSpace := objectManager defaultObjectSpace.
-    currentSpace == defaultSpace
-        ifFalse:
-            [defaultSpace == 0
-                ifTrue:
-                    [dataFileA isNil ifTrue: [dataFileA := ODBObjectStorage
-openOn: self dataFileNameA].
-                    activeDataFile := dataFileA]
-                ifFalse:
-                    [dataFileB isNil ifTrue: [dataFileB := ODBObjectStorage
-openOn: self dataFileNameB].
-                    activeDataFile := dataFileB].
-            ].
+	| currentSpace defaultSpace |
+	currentSpace := activeDataFile == dataFileA
+		                ifTrue: [ 0 ]
+		                ifFalse: [ 1 ].
+	defaultSpace := objectManager defaultObjectSpace.
+	currentSpace == defaultSpace ifFalse: [ 
+		defaultSpace == 0
+			ifTrue: [ 
+				dataFileA ifNil: [ 
+					dataFileA := ODBObjectStorage openOn: self dataFileNameA ].
+				activeDataFile := dataFileA ]
+			ifFalse: [ 
+				dataFileB ifNil: [ 
+					dataFileB := ODBObjectStorage openOn: self dataFileNameB ].
+				activeDataFile := dataFileB ] ].
 	^ activeDataFile waitForAddingLock
 ]
 
@@ -270,9 +268,9 @@ ODBContainer >> newObjectHolder [
 
 { #category : #public }
 ODBContainer >> numberOfObjects [
-		"Answer number of objects in container."
+	"Answer number of objects in container."
 
-	^indexFile getLastIndex
+	^ indexFile getLastIndex
 ]
 
 { #category : #public }
@@ -338,7 +336,7 @@ ODBContainer >> openOn: aString [
 			(activeDataFile := dataFileA) ifNil: [ activeDataFile := dataFileB ] ]
 		ifFalse: [ 
 			(activeDataFile := dataFileB) ifNil: [ activeDataFile := dataFileA ] ].
-	activeDataFile isNil ifTrue: [ 
+	activeDataFile ifNil: [ 
 		OmniBase signalError:
 			'Object storage file ' , self dataFileNameA , ' can not be opened' ] ] 
 		ifCurtailed: [ self close ]
@@ -367,41 +365,43 @@ ODBContainer >> removeObjectFile: anInteger [
 ]
 
 { #category : #private }
-ODBContainer >> removeObjectSpace: anInteger [ 
+ODBContainer >> removeObjectSpace: anInteger [
 
-	(self convertToLocalObjectSpaceNumber: anInteger) = 0 
-		ifTrue: 
-			[dataFileA isNil 
-				ifFalse: 
-					[activeDataFile == dataFileA ifTrue: [activeDataFile := dataFileB].
-					dataFileA
-						unlockAdding;
-						removeAll;
-						remove.
-					dataFileA := nil]]
-		ifFalse: 
-			[dataFileB isNil 
-				ifFalse: 
-					[activeDataFile == dataFileB ifTrue: [activeDataFile := dataFileA].
-					dataFileB
-						unlockAdding;
-						removeAll;
-						remove.
-					dataFileB := nil]]
+	(self convertToLocalObjectSpaceNumber: anInteger) = 0
+		ifTrue: [ 
+			dataFileA ifNotNil: [ 
+				activeDataFile == dataFileA ifTrue: [ activeDataFile := dataFileB ].
+				dataFileA
+					unlockAdding;
+					removeAll;
+					remove.
+				dataFileA := nil ] ]
+		ifFalse: [ 
+			dataFileB ifNotNil: [ 
+				activeDataFile == dataFileB ifTrue: [ activeDataFile := dataFileA ].
+				dataFileB
+					unlockAdding;
+					removeAll;
+					remove.
+				dataFileB := nil ] ]
 ]
 
 { #category : #private }
-ODBContainer >> setNewObjectSpace: newSpace [ 
-	| currentSpace newLocalSpace |
+ODBContainer >> setNewObjectSpace: newSpace [
 
+	| currentSpace newLocalSpace |
 	newLocalSpace := self convertToLocalObjectSpaceNumber: newSpace.
-	currentSpace := activeDataFile == dataFileA ifTrue: [0] ifFalse: [1].
-	currentSpace = newLocalSpace ifTrue: [^self].
-	newLocalSpace = 0 
-		ifTrue: 
-			[dataFileA isNil ifTrue: [dataFileA := ODBObjectStorage openOn: self dataFileNameA].
-			activeDataFile := dataFileA]
-		ifFalse: 
-			[dataFileB isNil ifTrue: [dataFileB := ODBObjectStorage openOn: self dataFileNameB].
-			activeDataFile := dataFileB]
+	currentSpace := activeDataFile == dataFileA
+		                ifTrue: [ 0 ]
+		                ifFalse: [ 1 ].
+	currentSpace = newLocalSpace ifTrue: [ ^ self ].
+	newLocalSpace = 0
+		ifTrue: [ 
+			dataFileA ifNil: [ 
+				dataFileA := ODBObjectStorage openOn: self dataFileNameA ].
+			activeDataFile := dataFileA ]
+		ifFalse: [ 
+			dataFileB ifNil: [ 
+				dataFileB := ODBObjectStorage openOn: self dataFileNameB ].
+			activeDataFile := dataFileB ]
 ]

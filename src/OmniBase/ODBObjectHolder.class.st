@@ -36,7 +36,7 @@ ODBObjectHolder >> container [
 
 { #category : #initialization }
 ODBObjectHolder >> createOn: aByteArray [
-        "Private - Create and initialize receiver."
+	"Private - Create and initialize receiver."
 
     contents := aByteArray.
     oldVersion := false
