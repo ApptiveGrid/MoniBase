@@ -8,14 +8,13 @@ Class {
 }
 
 { #category : #public }
-ODBBTreeIdentityDictionary >> at: aKey ifAbsent: aBlock [ 
-	| oid |
-	^transaction isNil 
-		ifTrue: [newKeys at: aKey odbResolve ifAbsent: aBlock]
-		ifFalse: 
-			[(oid := transaction getObjectIDOrNil: aKey) isNil 
-				ifTrue: [newKeys at: aKey ifAbsent: aBlock]
-				ifFalse: [super at: oid ifAbsent: aBlock]]
+ODBBTreeIdentityDictionary >> at: aKey ifAbsent: aBlock [
+	^ transaction
+		  ifNil: [ newKeys at: aKey odbResolve ifAbsent: aBlock ]
+		  ifNotNil: [ 
+			  (transaction getObjectIDOrNil: aKey)
+				  ifNil: [ newKeys at: aKey ifAbsent: aBlock ]
+				  ifNotNil: [:oid| super at: oid ifAbsent: aBlock ] ]
 ]
 
 { #category : #public }
@@ -53,14 +52,14 @@ ODBBTreeIdentityDictionary >> databaseObjectClass [
 ]
 
 { #category : #public }
-ODBBTreeIdentityDictionary >> includesKey: aKey [ 
-	| oid |
-	^transaction isNil 
-		ifTrue: [newKeys includesKey: aKey odbResolve]
-		ifFalse: 
-			[(oid := transaction getObjectIDOrNil: aKey) isNil 
-				ifTrue: [newKeys includesKey: aKey]
-				ifFalse: [super includesKey: oid]]
+ODBBTreeIdentityDictionary >> includesKey: aKey [
+
+	^ transaction
+		  ifNil: [ newKeys includesKey: aKey odbResolve ]
+		  ifNotNil: [ 
+			  (transaction getObjectIDOrNil: aKey)
+				  ifNil: [ newKeys includesKey: aKey ]
+				  ifNotNil: [ :oid | super includesKey: oid ] ]
 ]
 
 { #category : #initialization }

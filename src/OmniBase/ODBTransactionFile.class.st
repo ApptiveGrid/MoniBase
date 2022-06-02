@@ -56,12 +56,15 @@ ODBTransactionFile >> initialize [
 ]
 
 { #category : #public }
-ODBTransactionFile >> lockAdd: anODBLock [ 
+ODBTransactionFile >> lockAdd: anODBLock [
+
 	"Add lock to transaction file."
 
 	| mStream bytes |
-	recovery isNil ifFalse: [OmniBase signalError: 'Can not lock in the middle of commit'].
-	anODBLock lockIndex isNil ifFalse: [OmniBase signalError: 'Lock is allready stored'].
+	recovery ifNotNil: [ 
+		OmniBase signalError: 'Can not lock in the middle of commit' ].
+	anODBLock lockIndex ifNotNil: [ 
+		OmniBase signalError: 'Lock is allready stored' ].
 	locks add: anODBLock.
 	lockPositions add: newLockPosition.
 	anODBLock lockIndex: locks size.
@@ -110,6 +113,7 @@ ODBTransactionFile >> openOn: aFileReference [
 
 { #category : #public }
 ODBTransactionFile >> opened [
+
 	"Private - Load all stored locks and recovery information."
 
 	"collect lock classes class IDs"
@@ -121,24 +125,26 @@ ODBTransactionFile >> opened [
 	locks := OrderedCollection new.
 	lockPositions := OrderedCollection new.
 	stream position: self headerLength + 10.
-	
-	[startingPosition := stream position.
-	(storedID := stream getByte) == 0] whileFalse: 
-				[storedID > 100 ifTrue: [classID := storedID - 100] ifFalse: [classID := storedID].	"removed locks have classID > 100"
-				obj := (classes at: classID ifAbsent: [OmniBase signalError: 'Unknown lock classID']) new 
-							loadFromStream: stream.
-				storedID > 100 
-					ifFalse: 
-						["if lock is still active"
-						locks add: obj.
-						obj lockIndex: locks size.
-						lockPositions add: startingPosition]].
+
+	[ 
+	startingPosition := stream position.
+	(storedID := stream getByte) == 0 ] whileFalse: [ 
+		classID := storedID > 100
+			           ifTrue: [ storedID - 100 ]
+			           ifFalse: [ storedID ].
+		obj := (classes
+			        at: classID
+			        ifAbsent: [ OmniBase signalError: 'Unknown lock classID' ])
+			       new loadFromStream: stream.
+		storedID > 100 ifFalse: [ "if lock is still active"
+			locks add: obj.
+			obj lockIndex: locks size.
+			lockPositions add: startingPosition ] ].
 	"load recovery information next"
 	stream position: self headerLength + 4.
-	(startingPosition := stream getLong) == 0 
-		ifFalse: 
-			[stream position: startingPosition.
-			recovery := ODBChangesPackage new loadFromStream: stream]
+	(startingPosition := stream getLong) == 0 ifFalse: [ 
+		stream position: startingPosition.
+		recovery := ODBChangesPackage new loadFromStream: stream ]
 ]
 
 { #category : #'public/unclassified' }
@@ -148,16 +154,15 @@ ODBTransactionFile >> recovery [
 ]
 
 { #category : #public }
-ODBTransactionFile >> recovery: anODBChangesPackage [ 
+ODBTransactionFile >> recovery: anODBChangesPackage [
+
 	"Set recovery instance variable and save recovery information."
 
 	| recoveryPosition |
-	anODBChangesPackage isNil 
-		ifTrue: [recoveryPosition := 0]
-		ifFalse: 
-			[recoveryPosition := newLockPosition + 1.
-			stream position: recoveryPosition.
-			anODBChangesPackage storeOnStream: stream].
+	anODBChangesPackage ifNil: [ recoveryPosition := 0 ] ifNotNil: [ 
+		recoveryPosition := newLockPosition + 1.
+		stream position: recoveryPosition.
+		anODBChangesPackage storeOnStream: stream ].
 	stream
 		atPosition: self headerLength + 4 putLong: recoveryPosition;
 		flush.

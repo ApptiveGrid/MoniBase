@@ -134,10 +134,15 @@ ODBSortedDictionary >> keysAndValuesDo: aBlock [
 
 { #category : #public }
 ODBSortedDictionary >> peekNext [
+
 	| i |
-	currentIndex < 1 ifTrue: [i := 0 - currentIndex] ifFalse: [i := currentIndex + 1].
-	i > elementCount ifTrue: [^nil].
-	^ODBBTreeDictionaryAssociation new setKey: (keys at: i) value: (values at: i)
+	i := currentIndex < 1
+		     ifTrue: [ 0 - currentIndex ]
+		     ifFalse: [ currentIndex + 1 ].
+	i > elementCount ifTrue: [ ^ nil ].
+	^ ODBBTreeDictionaryAssociation new
+		  setKey: (keys at: i)
+		  value: (values at: i)
 ]
 
 { #category : #public }

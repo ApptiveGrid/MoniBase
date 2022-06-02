@@ -301,10 +301,9 @@ ODBBTreeIndexDictionary >> getCurrent [
 
 { #category : #public }
 ODBBTreeIndexDictionary >> getFirst [
-	| assoc |
+
 	self basicGoTo: (ByteArray new: keySize).
-	(assoc := self getCurrent) isNil ifTrue: [^self getNext].
-	^assoc
+	^ self getCurrent ifNil: [ self getNext ]
 ]
 
 { #category : #public }
