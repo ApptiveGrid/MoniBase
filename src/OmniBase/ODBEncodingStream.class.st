@@ -459,6 +459,16 @@ ODBEncodingStream >> nextPutWideString: aWideString [
 		putBytesFrom: buf len: buf size
 ]
 
+{ #category : #writing }
+ODBEncodingStream >> nextPutWideSymbol: aSymbol [ 
+	| buf |
+	buf := self class encodeString: aSymbol asString.
+	stream
+		putByte: ODBWideSymbolCode;
+		putPositiveInteger: buf size;
+		putBytesFrom: buf len: buf size
+]
+
 { #category : #reading }
 ODBEncodingStream >> nextSmallFloat64: aDeserializer [ 
 	"We multiply the Boxesfloat by 1, this way we create a SmallFloat if possible"
@@ -496,6 +506,14 @@ ODBEncodingStream >> nextWideString [
 	buf := ByteArray new: (len := stream getPositiveInteger).
 	stream getBytesFor: buf len: len.
 	^ readerWriter register: (self class decodeBytes: buf)
+]
+
+{ #category : #reading }
+ODBEncodingStream >> nextWideSymbol [
+	| buf len |
+	buf := ByteArray new: (len := stream getPositiveInteger).
+	stream getBytesFor: buf len: len.
+	^ (self class decodeBytes: buf) asSymbol
 ]
 
 { #category : #reading }
