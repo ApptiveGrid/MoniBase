@@ -44,7 +44,7 @@ BSDFLock class >> fcntl: fd command: cmd struct: struct [
 	^ self 
 		ffiCall: #(int fcntl(int fd, int cmd, FLock *struct)) 
 		library: LibC
-		fixedArgumentCount:2
+		fixedArgumentCount: 2
 ]
 
 { #category : #private }
@@ -53,7 +53,7 @@ BSDFLock class >> fcntl: fd command: cmd value: value [
 	^ self 
 		ffiCall: #(int fcntl(int fd, int cmd, ulong value))
 		library: LibC
-		fixedArgumentCount:2
+		fixedArgumentCount: 2
 ]
 
 { #category : #'field definition' }
