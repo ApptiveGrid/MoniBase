@@ -48,7 +48,8 @@ FLock class >> fcntl: fd command: cmd struct: struct [
 
 	^ self 
 		ffiCall: #(int fcntl(int fd, int cmd, FLock *struct))
-		module: LibC
+		library: LibC
+		fixedArgumentCount: 2
 ]
 
 { #category : #private }
@@ -56,7 +57,8 @@ FLock class >> fcntl: fd command: cmd value: value [
 
 	^ self 
 		ffiCall: #(int fcntl(int fd, int cmd, int value))
-		module: LibC
+		library: LibC
+		fixedArgumentCount: 2
 ]
 
 { #category : #'field definition' }

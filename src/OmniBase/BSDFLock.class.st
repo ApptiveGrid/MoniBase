@@ -41,18 +41,19 @@ BSDFLock class >> canLock: fileHandle from: start to: length exclusive: exclusiv
 
 { #category : #private }
 BSDFLock class >> fcntl: fd command: cmd struct: struct [
-
 	^ self 
-		ffiCall: #(int fcntl(int fd, int cmd, FLock *struct))
-		module: LibC
+		ffiCall: #(int fcntl(int fd, int cmd, FLock *struct)) 
+		library: LibC
+		fixedArgumentCount: 2
 ]
 
 { #category : #private }
 BSDFLock class >> fcntl: fd command: cmd value: value [
 
 	^ self 
-		ffiCall: #(int fcntl(int fd, int cmd, int value))
-		module: LibC
+		ffiCall: #(int fcntl(int fd, int cmd, ulong value))
+		library: LibC
+		fixedArgumentCount: 2
 ]
 
 { #category : #'field definition' }
