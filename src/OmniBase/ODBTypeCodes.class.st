@@ -39,6 +39,7 @@ Class {
 		'ODBTrueCode',
 		'ODBUndefinedObjectCode',
 		'ODBWideStringCode',
+		'ODBWideSymbolCode',
 		'TypeCodeMapping'
 	],
 	#category : #'OmniBase-Base'
@@ -68,7 +69,8 @@ ODBTypeCodes class >> initializeTypeCodeMapping [
 		at: ODBTrueCode                          put: true;
 		at: ODBFalseCode                         put: false;
 		at: ODBMessageCode                       put: Message;
-		at: ODBSymbolCode                        put: Symbol;
+		at: ODBSymbolCode                        put: ByteSymbol;
+		at: ODBWideSymbolCode 						 put: WideSymbol;
 		at: ODBSystemDictionaryCode              put: Smalltalk globals;
 		at: ODBMessageSendCode                   put: MessageSend;
 		at: ODBProcessSchedulerCode              put: Processor;
@@ -160,6 +162,7 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBFloatCode := 40.
 	ODBScaledDecimalCode := 45.
 	ODBSmallFloat64Code := 47.
+	ODBWideSymbolCode := 48.
 	"integers <= 16 are stored with code 50 + number"
 	ODBSmallPositiveIntegerBaseCode := 50. 
 	"50 .. 64 integers 0 .. 16"

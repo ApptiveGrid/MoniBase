@@ -1019,6 +1019,27 @@ ODBSerializationTest >> testSerializationWideStringUTF8 [
 	self assert: materialized equals: string.
 ]
 
+{ #category : #tests }
+ODBSerializationTest >> testSerializationWideSymbol [
+	| symbol serialized materialized |
+	symbol := String
+		with: 16rF600 asCharacter
+		with: 16rF603 asCharacter
+		with: 16r0155 asCharacter
+		with: 16r0111 asCharacter.
+	symbol := symbol asSymbol.
+	self assert: symbol isWideString.
+	
+	ODBEncodingStream characterEncoding: #utf8.
+	
+	serialized := ODBSerializer serializeToBytes: symbol.
+	self assert: serialized equals: #[0 0 0 0 0 0 48 10 239 152 128 239 152 131 197 149 196 145].
+	self assert: (serialized at: 7) equals: ODBWideSymbolCode.
+	
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	self assert: materialized equals: symbol
+]
+
 { #category : #'tests-layouts' }
 ODBSerializationTest >> testSerializationWordLayout [
 	| object serialized materialized |
