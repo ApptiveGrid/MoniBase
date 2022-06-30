@@ -457,14 +457,15 @@ ODBBTreePage >> storeItemLocked [
 
 { #category : #public }
 ODBBTreePage >> storeLocked [
+
 	"Store page on iterator stream."
 
 	| length |
-	(contents at: 1) > 127 
-		ifFalse: [length := (itemLength + 4) * self pageSize + 5]
-		ifTrue: [length := itemLength * self pageSize + 1].
+	length := (contents at: 1) > 127
+		          ifFalse: [ itemLength + 4 * self pageSize + 5 ]
+		          ifTrue: [ itemLength * self pageSize + 1 ].
 	iterator waitForLockAt: pagePosition length: length.
-	iterator stream 
+	iterator stream
 		atPosition: pagePosition
 		putBytesFrom: contents
 		len: length.
