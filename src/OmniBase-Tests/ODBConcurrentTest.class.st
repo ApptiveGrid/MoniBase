@@ -114,18 +114,12 @@ ODBConcurrentTest >> testObjectLockingDifferentDatabases [
 
 { #category : #tests }
 ODBConcurrentTest >> testObjectLockingSameDatabase [
-
 	"Test if object locking works with transactions running in two database connections."
-
-	"This test fails on unix based systems as locking does not rely solely on file locking but
-	on the database connection. If there are two connections it does not work"
 
 	| t1 t2 coll collCopy |
 	[ 
-	[ 
-	coll := OrderedCollection with: 'This collection will be locked'.
-	OmniBase root at: 'lockTest' put: coll ] evaluateAndCommitIn:
-		db newTransaction.
+	[ coll := OrderedCollection with: 'This collection will be locked'.
+		OmniBase root at: 'lockTest' put: coll ] evaluateAndCommitIn: db newTransaction.
 	"test"
 	t1 := db newTransaction.
 	t2 := db newTransaction.
@@ -149,8 +143,8 @@ ODBConcurrentTest >> testObjectLockingSameDatabase [
 	collCopy := t2 root at: 'lockTest'.
 	self assert: collCopy first equals: 'This collection will be locked'.
 	self deny: (t2 lock: collCopy).
-	"wait here a little since changes are updated every half a second (500 ms)"
-	(Delay forMilliseconds: 505) wait.
+	
+	"we do not commit t2, thus a new transaction should see the value 'Changed collection' commited by t1"
 	t2 := db newTransaction.
 	coll := t2 root at: 'lockTest'.
 	self assert: coll first equals: 'Changed collection' ] ensure: [ 
