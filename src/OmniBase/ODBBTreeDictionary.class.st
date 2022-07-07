@@ -51,39 +51,34 @@ ODBBTreeDictionary >> at: aKey put: anObject ifLocked: aBlock [
 ]
 
 { #category : #private }
-ODBBTreeDictionary >> basicLockKey: key [ 
+ODBBTreeDictionary >> basicLockKey: key [
+
 	"Private - Lock key so that other transactions wont be able
 	to change it. Answer <true> if successfull."
 
 	| lock lockID value |
-	dataBaseObject isNil ifTrue: [^true].
-	(lockID := transaction lockID) isNil ifTrue: [^false].
-	transaction isGlobalLocked ifTrue: [^true].
+	dataBaseObject ifNil: [ ^ true ].
+	(lockID := transaction lockID) ifNil: [ ^ false ].
+	transaction isGlobalLocked ifTrue: [ ^ true ].
 	"Does the registry contain a lock for this dictionary and key?"
-	lock := transaction 
-		keyLockOn: self
-		key: key 
-		ifAbsent: [ nil ]. 
+	lock := transaction keyLockOn: self key: key ifAbsent: [ nil ].
 	"A present lock is either inside the current transaction which makes
 	it succeed or it is part of another transaction which indicates a
 	locking conflict"
-	lock ifNotNil: [  
-		^ lock isSameTransaction: transaction ].
-	lock := (ODBKeyLock new)
-				objectID: holder objectID;
-				lockID: lockID;
-				key: key.
+	lock ifNotNil: [ ^ lock isSameTransaction: transaction ].
+	lock := ODBKeyLock new
+		        objectID: holder objectID;
+		        lockID: lockID;
+		        key: key.
 	value := self valueAt: key.
-	dataBaseObject iterator critical: 
-			[
-			(transaction addLoggedLock: lock) ifFalse: [ ^ false ].
-			((dataBaseObject iterator)
-				goTo: key;
-				lockCurrentValue: value contents with: lockID) 
-					ifFalse: 
-						[transaction removeLoggedLock: lock.
-						^false]].
-	^true
+	dataBaseObject iterator critical: [ 
+		(transaction addLoggedLock: lock) ifFalse: [ ^ false ].
+		(dataBaseObject iterator
+			 goTo: key;
+			 lockCurrentValue: value contents with: lockID) ifFalse: [ 
+			transaction removeLoggedLock: lock.
+			^ false ] ].
+	^ true
 ]
 
 { #category : #private }
