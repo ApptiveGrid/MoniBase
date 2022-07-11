@@ -186,12 +186,11 @@ ODBTransactionFile >> reinitialize [
 
 { #category : #public }
 ODBTransactionFile >> transactionID [
-	transactionID isNil 
-		ifTrue: 
-			[transactionID := stream
-						position: self headerLength + 8;
-						getWord].
-	^transactionID
+
+	^ transactionID ifNil: [ 
+		  transactionID := stream
+			                   position: self headerLength + 8;
+			                   getWord ]
 ]
 
 { #category : #'public/unclassified' }
