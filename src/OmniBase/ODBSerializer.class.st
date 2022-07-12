@@ -67,8 +67,8 @@ ODBSerializer >> addExternalReference: anObject objectId: anObjectId [
 ]
 
 { #category : #private }
-ODBSerializer >> cantSave: anObject [ 
-	anObject class name , ' can''t be stored!' odbSerialize: self
+ODBSerializer >> cantSave: anObject [
+	OmniBase signalError: anObject class name , ' can''t be stored!'
 ]
 
 { #category : #initialization }
