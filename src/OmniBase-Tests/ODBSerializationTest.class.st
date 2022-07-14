@@ -39,12 +39,10 @@ ODBSerializationTest >> testSerializationAssociation [
 
 { #category : #tests }
 ODBSerializationTest >> testSerializationBlockClosure [
-	| object serialized materialized |
+	| object serialized  |
 	object := [].
-	serialized := ODBSerializer serializeToBytes: object.
-	
-	materialized := ODBDeserializer deserializeFromBytes: serialized.
-	self assert: materialized equals: #'FullBlockClosure can''t be stored!'
+	"we do not uet support serializing closures"
+	self should: [serialized := ODBSerializer serializeToBytes: object] raise: TestResult error
 ]
 
 { #category : #tests }
@@ -548,12 +546,10 @@ ODBSerializationTest >> testSerializationOrderedCollection [
 
 { #category : #tests }
 ODBSerializationTest >> testSerializationProcess [
-	| object serialized materialized |
+	| object serialized |
 	object := Processor activeProcess.
-	serialized := ODBSerializer serializeToBytes: object.
-	
-	materialized := ODBDeserializer deserializeFromBytes: serialized.
-	self assert: materialized equals: #'Process can''t be stored!'
+	"we do not uet support serializing Processes"
+	self should: [serialized := ODBSerializer serializeToBytes: object] raise: TestResult error
 ]
 
 { #category : #tests }
