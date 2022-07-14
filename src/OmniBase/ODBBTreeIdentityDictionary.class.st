@@ -163,14 +163,14 @@ ODBBTreeIdentityDictionary >> odbAboutToCommitIn: anOmniBaseTransaction [
 ]
 
 { #category : #public }
-ODBBTreeIdentityDictionary >> removeKey: aKey ifLocked: aBlock [ 
-	| oid |
-	^transaction isNil 
-		ifTrue: [newKeys removeKey: aKey odbResolve ifAbsent: []]
-		ifFalse: 
-			[(oid := transaction getObjectIDOrNil: aKey) isNil 
-				ifTrue: [newKeys removeKey: aKey ifAbsent: []]
-				ifFalse: [super removeKey: oid ifLocked: aBlock]]
+ODBBTreeIdentityDictionary >> removeKey: aKey ifLocked: aBlock [
+
+	^ transaction
+		  ifNil: [ newKeys removeKey: aKey odbResolve ifAbsent: nil ]
+		  ifNotNil: [ 
+			  (transaction getObjectIDOrNil: aKey)
+				  ifNil: [ newKeys removeKey: aKey ifAbsent: nil ]
+				  ifNotNil: [:oid |super removeKey: oid ifLocked: aBlock ] ]
 ]
 
 { #category : #public }

@@ -257,46 +257,46 @@ ODBBTreeIndexDictionary >> from: start to: end [
 
 { #category : #accessing }
 ODBBTreeIndexDictionary >> fromPosition: start to: end [
+
 	"Returns occurrences from start to end."
-	
+
 	"Better implementations of this are very welcome :)"
 
 	| assoc result startKey endKey current |
-	result := OrderedCollection new..
+	result := OrderedCollection new.
 	startKey := self bytesFromKey: start.
 	endKey := self bytesFromKey: end.
 	self basicGoTo: startKey.
 	assoc := self getCurrent.
-	assoc ifNil:[^ result].
+	assoc ifNil: [ ^ result ].
 
-	[currentKey asInteger <= endKey asInteger] whileTrue:[
-		assoc ifNotNil:[
-			result add: assoc value].
+	[ currentKey asInteger <= endKey asInteger ] whileTrue: [ 
+		assoc ifNotNil: [ result add: assoc value ].
 		current := self getNext.
-		current isNil ifTrue: [^result]].
-	
+		current ifNil: [ ^ result ] ].
+
 	^ result
 ]
 
 { #category : #enumerating }
 ODBBTreeIndexDictionary >> getCurrent [
+
 	| a |
-	changed isNil 
-		ifFalse: 
-			[(a := changed getCurrent) isNil 
-				ifFalse: 
-					[a valueHolder isRemoved ifTrue: [^nil].
-					^a]].
-	(dataBaseObject isNil 
-		or: [(a := dataBaseObject iterator goToAndGetCurrentAt: currentKey) isNil]) ifTrue: [^nil].
+	changed ifNotNil: [ 
+		(a := changed getCurrent) ifNotNil: [ 
+			a valueHolder isRemoved ifTrue: [ ^ nil ].
+			^ a ] ].
+	(dataBaseObject isNil or: [ 
+		 (a := dataBaseObject iterator goToAndGetCurrentAt: currentKey)
+			 isNil ]) ifTrue: [ ^ nil ].
 	a := ODBValueHolder createOn: a value.
-	[transaction versionDescriptor versionOK: a versionNumber] 
-		whileFalse: [a loadPreviousVersionFrom: transaction oldHolders].
-	a isRemoved ifTrue: [^nil].
-	^ODBBTreeDictionaryAssociation new 
-		setTransaction: transaction
-		key: (self keyFromBytes: currentKey)
-		value: a
+	[ transaction versionDescriptor versionOK: a versionNumber ] 
+		whileFalse: [ a loadPreviousVersionFrom: transaction oldHolders ].
+	a isRemoved ifTrue: [ ^ nil ].
+	^ ODBBTreeDictionaryAssociation new
+		  setTransaction: transaction
+		  key: (self keyFromBytes: currentKey)
+		  value: a
 ]
 
 { #category : #public }
