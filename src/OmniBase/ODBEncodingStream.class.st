@@ -111,7 +111,7 @@ ODBEncodingStream >> nextByteArray: aClass [
 	1 to: array size do: [:i | 
 		array 
 			at: i 
-			put: stream getPositiveInteger ].
+			put: stream getByte ].
 	^array
 ]
 
