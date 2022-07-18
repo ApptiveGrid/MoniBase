@@ -227,9 +227,6 @@ ODBSerializationTest >> testSerializationClass [
 { #category : #'tests-layouts' }
 ODBSerializationTest >> testSerializationCompiledMethodLayout [
 	| object serialized materialized |
-	self skip.
-	"Not yet implemented"
-	self flag: #TODO.
 	"We use CompiledMethod as an exampe of a class with a CompiledMethodLayout"
 	object := (OrderedCollection>>#do:) copy.
 	
@@ -237,7 +234,27 @@ ODBSerializationTest >> testSerializationCompiledMethodLayout [
 	serialized := ODBSerializer serializeToBytes: object.
 
 	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	
+	self assert: materialized bytecode equals: object bytecode.
+	self assert: materialized literals equals: object literals.
 	self assert: materialized equals: object.
+	self assert: materialized class classLayout class equals: CompiledMethodLayout.
+]
+
+{ #category : #'tests-layouts' }
+ODBSerializationTest >> testSerializationCompiledMethodLayout2 [
+	| object serialized materialized |
+	"This tests CompiledBlock. we use a clean block for now"
+	object := [1+2 "clean block"] compiledBlock.
+	
+	self assert: object class classLayout class equals: CompiledMethodLayout.
+	serialized := ODBSerializer serializeToBytes: object.
+
+	materialized := ODBDeserializer deserializeFromBytes: serialized.
+	
+	"for #= we need equal outercode to be the same, too"
+	self assert: materialized bytecode equals: object bytecode.
+	self assert: materialized literals equals: object literals.
 	self assert: materialized class classLayout class equals: CompiledMethodLayout.
 ]
 
