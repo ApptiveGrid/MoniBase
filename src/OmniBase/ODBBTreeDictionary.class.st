@@ -85,65 +85,64 @@ ODBBTreeDictionary >> basicLockKey: key [
 
 { #category : #private }
 ODBBTreeDictionary >> commitChanged [
+
 	"Private - Commit changes on an already existing dictionary."
 
 	| changesPackage newValue vn oldHolders |
 	changesPackage := transaction changesPackage.
-	changesPackage add: (ODBDictionaryChanged new transactionObject: self).
-	deltaSize = 0 
-		ifFalse: 
-			[changesPackage add: ((ODBSizeChanged new)
-						setObjectID: holder objectID transactionObject: self;
-						deltaSize: deltaSize)].
+	changesPackage add:
+		(ODBDictionaryChanged new transactionObject: self).
+	deltaSize = 0 ifFalse: [ 
+		changesPackage add: (ODBSizeChanged new
+				 setObjectID: holder objectID transactionObject: self;
+				 deltaSize: deltaSize) ].
 	vn := transaction versionNumber.
 	oldHolders := transaction oldHolders.
-	changed isNil 
-		ifFalse: 
-			[changed keysAndValuesDo: 
-					[:key :oldValue | 
-					newValue := oldValue makeNewVersion: oldHolders.
-					newValue versionNumber: vn.
-					oldValue isRemoved 
-						ifFalse: [newValue objectID: (transaction getObjectID: newValue object)].
-					changesPackage add: ((ODBAssociationChanged new)
-								key: key;
-								setObjectID: holder objectID transactionObject: self;
-								oldValue: oldValue;
-								newValue: newValue)]]
+	changed ifNotNil: [ 
+		changed keysAndValuesDo: [ :key :oldValue | 
+			newValue := oldValue makeNewVersion: oldHolders.
+			newValue versionNumber: vn.
+			oldValue isRemoved ifFalse: [ 
+				newValue objectID: (transaction getObjectID: newValue object) ].
+			changesPackage add: (ODBAssociationChanged new
+					 key: key;
+					 setObjectID: holder objectID transactionObject: self;
+					 oldValue: oldValue;
+					 newValue: newValue) ] ]
 ]
 
 { #category : #private }
 ODBBTreeDictionary >> commitNew [
+
 	"Private - Commit changes when new database object needs to be created."
 
 	| newHolder newDBObject vn |
 	vn := transaction versionNumber.
 	newHolder := (holder makeNewVersion: transaction oldHolders)
-				persistentClassID: self databaseObjectClass classID;
-				versionNumber: vn.
-	newDBObject := self databaseObjectClass new createOn: newHolder keySize: keySize.
-	changed notNil 
-		ifTrue: 
-			[changed keysAndValuesDo: 
-					[:key :value | 
-					value isRemoved 
-						ifFalse: 
-							[value
-								objectID: (transaction getObjectID: value object);
-								versionNumber: vn.
-							newDBObject at: key put: value]]].
-	newDBObject iterator 
+		             persistentClassID: self databaseObjectClass classID;
+		             versionNumber: vn.
+	newDBObject := self databaseObjectClass new
+		               createOn: newHolder
+		               keySize: keySize.
+	changed ifNotNil: [ 
+		changed keysAndValuesDo: [ :key :value | 
+			value isRemoved ifFalse: [ 
+				value
+					objectID: (transaction getObjectID: value object);
+					versionNumber: vn.
+				newDBObject at: key put: value ] ] ].
+	newDBObject iterator
 		updateSizeAt: vn
 		oldHolders: nil
 		deltaSize: deltaSize.
-	(transaction changesPackage)
-		add: ((ODBNewObjectVersion new)
-					setObjectID: holder objectID transactionObject: self;
-					oldVersion: holder;
-					newVersion: newHolder);
-		add: ((ODBDictionaryChanged new)
-					transactionObject: self;
-					dataBaseObject: newDBObject)
+	transaction changesPackage
+		add: (ODBNewObjectVersion new
+				 setObjectID: holder objectID transactionObject: self;
+				 oldVersion: holder;
+				 newVersion: newHolder);
+		add: (ODBDictionaryChanged new
+				 transactionObject: self;
+				 dataBaseObject: newDBObject)
 ]
 
 { #category : #private }
@@ -165,19 +164,20 @@ ODBBTreeDictionary >> isEmpty [
 ]
 
 { #category : #public }
-ODBBTreeDictionary >> isKeyLocked: aKey [ 
+ODBBTreeDictionary >> isKeyLocked: aKey [
+
 	"Answer <true> if aKey is locked."
 
 	| key result |
-	dataBaseObject isNil ifTrue: [^false].
-	transaction isGlobalLocked ifTrue: [^false].
+	dataBaseObject ifNil: [ ^ false ].
+	transaction isGlobalLocked ifTrue: [ ^ false ].
 	key := self bytesFromKey: aKey.
-	dataBaseObject iterator critical: 
-			[result := (self hasLockAt: aKey ) or: 
-							[(dataBaseObject iterator)
-								goTo: key;
-								isLocked]].
-	^result
+	dataBaseObject iterator critical: [ 
+		result := (self hasLockAt: aKey) or: [ 
+			          dataBaseObject iterator
+				          goTo: key;
+				          isLocked ] ].
+	^ result
 ]
 
 { #category : #public }

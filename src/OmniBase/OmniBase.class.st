@@ -165,6 +165,7 @@ OmniBase class >> newBTreeIndexDictionary: keySize [
 
 { #category : #public }
 OmniBase class >> newPersistentDictionary [
+
 	"Create new persistent dictionary. All dictionary keys will be 
 	stored together with the dictionary if not already persistent. All
 	dictionary values will be stored separately and will be made
@@ -172,8 +173,8 @@ OmniBase class >> newPersistentDictionary [
 
 	| dict |
 	dict := ODBPersistentDictionary new.
-	self currentTransactionOrNil notNil ifTrue: [dict makePersistent].
-	^dict
+	self currentTransactionOrNil ifNotNil: [ dict makePersistent ].
+	^ dict
 ]
 
 { #category : #public }

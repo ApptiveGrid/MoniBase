@@ -163,6 +163,6 @@ ODBReference >> odbTransaction [
 { #category : #private }
 ODBReference >> odbTransactionObject [
 
-	transactionObject isNil ifTrue: [demandLoader getObject].
-	^transactionObject
+	transactionObject ifNil: [ demandLoader getObject ].
+	^ transactionObject
 ]

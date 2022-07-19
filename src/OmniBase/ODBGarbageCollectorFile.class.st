@@ -61,14 +61,13 @@ ODBGarbageCollectorFile >> openOn: aFileReference [
 
 { #category : #public }
 ODBGarbageCollectorFile >> status [
+
 	"Answer garbage collector status."
 
-	status isNil 
-		ifTrue: 
-			[status := stream
-						position: self headerLength;
-						getByte].
-	^status
+	^ status ifNil: [ 
+		  status := stream
+			            position: self headerLength;
+			            getByte ]
 ]
 
 { #category : #public }

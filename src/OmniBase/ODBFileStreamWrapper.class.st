@@ -86,11 +86,13 @@ ODBFileStreamWrapper >> basicPutBytesFrom: aByteArray len: length [
 
 { #category : #'initialize-release' }
 ODBFileStreamWrapper >> close [
+
 	"Close file associatied with receiver."
-	stream notNil ifTrue: [
+
+	stream ifNotNil: [ 
 		stream unlock.
 		stream closed ifFalse: [ stream close ] ].
-	stream := nil.
+	stream := nil
 ]
 
 { #category : #accessing }

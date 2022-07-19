@@ -335,7 +335,7 @@ ODBTransaction >> transactionObjectAt: objectID [
 	| holder transactionObject t2 |
 	cacheMutex ifNil: [ ^ ODBExpiredProxyObject on: objectID ].
 	cacheMutex critical: [ transactionObject := objects at: objectID ].
-	transactionObject isNil ifFalse: [ ^ transactionObject ].
+	transactionObject ifNotNil: [ ^ transactionObject ].
 	(holder := dbConnection objectManager holderAt: objectID) ifNil: [ "OID (1:1) = nil"
 		^ transactionObject := (objectID index = 1 and: [ 
 			                        objectID containerID = 1 ]) ifFalse: [ 
@@ -345,7 +345,7 @@ ODBTransaction >> transactionObjectAt: objectID [
 	[ transactionObject := holder getObject makeTransactionObject: self ] 
 		ifCurtailed: [ self becomeInconsistent ].
 	cacheMutex critical: [ 
-		(t2 := objects at: objectID) isNil ifTrue: [ 
+		(t2 := objects at: objectID) ifNil: [ 
 			objects at: objectID put: transactionObject.
 			objectIndex at: transactionObject value put: transactionObject ] ].
 	^ t2 ifNil: [ transactionObject objectLoaded ] ifNotNil: [ t2 ]
