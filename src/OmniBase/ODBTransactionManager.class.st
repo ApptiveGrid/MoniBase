@@ -15,14 +15,13 @@ Class {
 
 { #category : #public }
 ODBTransactionManager >> close [
-	versionControl notNil 
-		ifTrue: 
-			[versionControl close.
-			versionControl := nil].
-	oldHolders notNil 
-		ifTrue: 
-			[oldHolders close.
-			oldHolders := nil].
+
+	versionControl ifNotNil: [ 
+		versionControl close.
+		versionControl := nil ].
+	oldHolders ifNotNil: [ 
+		oldHolders close.
+		oldHolders := nil ].
 	dbConnection := nil
 ]
 
@@ -99,13 +98,15 @@ ODBTransactionManager >> transactionAborted: aTransaction [
 ]
 
 { #category : #public }
-ODBTransactionManager >> transactionCommitBegin: aTransaction [ 
+ODBTransactionManager >> transactionCommitBegin: aTransaction [
+
 	| versionNumber |
 	serializingTransactionsSemaphore wait.
-	committingTransaction notNil 
-		ifTrue: [OmniBase signalError: 'Concurrent commit is not allowed'].
+	committingTransaction ifNotNil: [ 
+		OmniBase signalError: 'Concurrent commit is not allowed' ].
 	committingTransaction := aTransaction.
-	versionNumber := versionControl getNewVersionNumberFor: aTransaction client clientID.
+	versionNumber := versionControl getNewVersionNumberFor:
+		                 aTransaction client clientID.
 	aTransaction versionDescriptor versionNumber: versionNumber
 ]
 

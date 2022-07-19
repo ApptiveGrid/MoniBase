@@ -168,21 +168,19 @@ ODBGarbageCollector >> oidStackFileName [
 ]
 
 { #category : #public }
-ODBGarbageCollector >> openOn: anOmniBase [ 
+ODBGarbageCollector >> openOn: anOmniBase [
+
 	"Open garbage collector on anOmnibase. If garbage collector file exists
 	then previous garbage collection was interrupted.
 	Answer <true> if previous GC was completed, <false> if it wasn't."
 
 	objectManager := anOmniBase objectManager.
-	(self gcFileName exists) 
-		ifTrue: 
-			[(gcFile := ODBGarbageCollectorFile openOn: self) isNil 
-				ifFalse: 
-					[gcFile status < 3 
-						ifTrue: 
-							[gcFile remove.
-							gcFile := nil]]].
-	^gcFile isNil
+	self gcFileName exists ifTrue: [ 
+		(gcFile := ODBGarbageCollectorFile openOn: self) ifNotNil: [ 
+			gcFile status < 3 ifTrue: [ 
+				gcFile remove.
+				gcFile := nil ] ] ].
+	^ gcFile isNil
 ]
 
 { #category : #private }
