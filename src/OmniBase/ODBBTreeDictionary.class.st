@@ -17,7 +17,7 @@ ODBBTreeDictionary >> addKey: key value: anObject [
 	(value := self valueAt: key) isRemoved
 		ifTrue: [ deltaSize := deltaSize + 1 ]
 		ifFalse: [ 
-			transaction ifNotNil: [ "ce je objekt identicen ga ne shranjuj znova"
+			transaction ifNotNil: [ "if the object is identical, do not save it again"
 				(transaction getObjectIDOrNil: anObject) = value objectID ifTrue: [ 
 					^ anObject ] ] ].
 	value object: anObject.
