@@ -7,6 +7,8 @@ Class {
 		'ODBByteArrayCode',
 		'ODBCharacterCode',
 		'ODBClassCode',
+		'ODBCompiledBlockCode',
+		'ODBCompiledMethodCode',
 		'ODBDateCode',
 		'ODBDictionaryCode',
 		'ODBDoubleByteCharacterCode',
@@ -75,6 +77,8 @@ ODBTypeCodes class >> initializeTypeCodeMapping [
 		at: ODBMessageSendCode                   put: MessageSend;
 		at: ODBProcessSchedulerCode              put: Processor;
 		at: ODBClassCode                         put: Class;
+		at: ODBCompiledMethodCode 					 put: CompiledMethod;
+		at: ODBCompiledBlockCode 					 put: CompiledBlock;
 		at: ODBDoubleByteCharacterCode           put: ODBDoubleByteCharacter;
 		at: ODBAssociationCode                   put: Association;
 		at: ODBDateCode                          put: Date;
@@ -147,7 +151,8 @@ ODBTypeCodes class >> initializeTypeCodes [
 	ODBProcessSchedulerCode := 22.
 	"23 .. 25"
 	ODBClassCode := 26.
-	"27 .. 28"
+	ODBCompiledMethodCode := 27.
+	ODBCompiledBlockCode := 28.
 	ODBDoubleByteCharacterCode := 29.
 	"30"
 	ODBAssociationCode := 31.

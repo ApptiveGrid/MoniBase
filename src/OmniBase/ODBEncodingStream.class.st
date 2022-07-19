@@ -129,6 +129,58 @@ ODBEncodingStream >> nextClass [
 ]
 
 { #category : #reading }
+ODBEncodingStream >> nextCompiledBlock: aClass [
+
+	| header bytecodesSize compiledBlock |
+	
+	header := stream getInteger.
+	bytecodesSize := stream getInteger.
+	compiledBlock := aClass
+		newMethod: bytecodesSize
+		header: header.
+	
+	"first the literals"
+	"note: we store the outer method here as a copy, more thinking needed"
+	1 to: compiledBlock numLiterals   do: [:i | 
+				compiledBlock literalAt: i put: self odbNextObject ].			
+	
+	compiledBlock initialPC 
+		to: compiledBlock size
+		do: [ :index |
+			compiledBlock
+				at: index
+				put: stream getByte ].
+	^compiledBlock
+]
+
+{ #category : #reading }
+ODBEncodingStream >> nextCompiledMethod: aClass [
+
+	| header bytecodesPlusTrailerSize compiledMethod |
+	
+	header := stream getInteger.
+	bytecodesPlusTrailerSize := stream getInteger.
+	
+	compiledMethod := aClass
+		newMethod: bytecodesPlusTrailerSize
+		header: header.
+	
+	"first the literals"	
+	"for now we do store the class pointer in the last literal"	
+	1 to: compiledMethod numLiterals do: [:i | 
+				compiledMethod literalAt: i  put: self odbNextObject ].			
+	
+	"then the bytecodes, we ignore the trailer for now"
+	compiledMethod initialPC 
+		to: compiledMethod size - compiledMethod trailer size
+		do: [ :index |
+			compiledMethod
+				at: index
+				put: stream getByte ].
+	^compiledMethod
+]
+
+{ #category : #reading }
 ODBEncodingStream >> nextDate: aClass [
 	^ readerWriter register: (aClass 
 		odbDateFromSeconds: stream getInteger 
@@ -293,6 +345,45 @@ ODBEncodingStream >> nextPutClass: aClass [
 	stream 
 		putByte: ODBClassCode; 
 		putString: aClass name asString
+]
+
+{ #category : #writing }
+ODBEncodingStream >> nextPutCompiledBlock: aCompiledMethod [ 
+	| cmInitialPC bytecodesPlusTrailerSize |
+
+	cmInitialPC := aCompiledMethod initialPC.
+	bytecodesPlusTrailerSize := aCompiledMethod size - cmInitialPC + 1.
+	
+	stream 
+		putByte: ODBCompiledBlockCode;
+		putInteger: aCompiledMethod header;
+	 	putInteger: bytecodesPlusTrailerSize.
+	"literals"
+	"Here we have to take care about outer code: for now we will serialize it"
+	
+	1 to: aCompiledMethod numLiterals do: [:i | 
+				(aCompiledMethod literalAt: i) odbSerialize: readerWriter ].
+	"variable part"
+	stream putBytesFrom: aCompiledMethod bytecode len: aCompiledMethod size - aCompiledMethod initialPC + 1
+]
+
+{ #category : #writing }
+ODBEncodingStream >> nextPutCompiledMethod: aCompiledMethod [ 
+	| cmInitialPC bytecodesPlusTrailerSize |
+
+	cmInitialPC := aCompiledMethod initialPC.
+	bytecodesPlusTrailerSize := aCompiledMethod size - cmInitialPC + 1.
+	
+	stream 
+		putByte: ODBCompiledMethodCode;
+		putInteger: aCompiledMethod header;
+	 	putInteger: bytecodesPlusTrailerSize.
+	"literals"
+	"for now we do store the class pointer in the last literal"
+	1 to: aCompiledMethod numLiterals do: [:i | 
+				(aCompiledMethod literalAt: i) odbSerialize: readerWriter ].
+	"variable part"
+	stream putBytesFrom: aCompiledMethod bytecode len: aCompiledMethod size - aCompiledMethod initialPC
 ]
 
 { #category : #writing }
