@@ -1,3 +1,8 @@
+"
+This class reads empty character byte Strings
+
+type code ""ODBSmallStringBaseCode""
+"
 Class {
 	#name : #ODBEmptyString,
 	#superclass : #ODBDeserializers,

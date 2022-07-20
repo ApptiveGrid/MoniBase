@@ -1,3 +1,9 @@
+"
+This class reads small byte Strings, size < 10
+
+type code ""ODBSmallStringBaseCode + string size""
+
+"
 Class {
 	#name : #ODBnCharacterString,
 	#superclass : #ODBDeserializers,

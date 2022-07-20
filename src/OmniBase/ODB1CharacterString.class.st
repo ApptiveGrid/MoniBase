@@ -1,3 +1,8 @@
+"
+This class reads 1 character byte Strings
+
+type code ""ODBSmallStringBaseCode + 1""
+"
 Class {
 	#name : #ODB1CharacterString,
 	#superclass : #ODBDeserializers,
