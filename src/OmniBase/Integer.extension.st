@@ -29,10 +29,3 @@ Integer >> odbBasicSerialize: serializer [
 
 	serializer stream nextPutInteger: self
 ]
-
-{ #category : #'*omnibase' }
-Integer >> odbSerialize: serializer [
-	"Small Integers are immediate objects, no registration needed"
-	self isLarge ifTrue: [ (serializer register: self) ifTrue: [^self] ].
-	self odbBasicSerialize: serializer
-]
