@@ -167,9 +167,9 @@ ODBEncodingStream >> nextLargeNegativeInteger [
 	| integer |
 	"Large Integers are normal objects (need to be registered), small integers are immediate"
 	integer := 0 - stream getPositiveInteger.
-	^ integer isLarge
-		  ifTrue: [ readerWriter register: integer ]
-		  ifFalse: [ integer ]
+	^ integer isImmediateObject
+		  ifFalse: [ readerWriter register: integer ]
+		  ifTrue: [ integer ]
 ]
 
 { #category : #reading }
@@ -178,9 +178,9 @@ ODBEncodingStream >> nextLargePositiveInteger [
 	| integer |
 	"Large Integers are normal objects (need to be registered), small integers are immediate"
 	integer := stream getPositiveInteger.
-	^ integer isLarge
-		  ifTrue: [ readerWriter register: integer ]
-		  ifFalse: [ integer ]
+	^ integer isImmediateObject
+		  ifFalse: [ readerWriter register: integer ]
+		  ifTrue: [ integer ]
 ]
 
 { #category : #reading }
