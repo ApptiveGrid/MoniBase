@@ -120,6 +120,20 @@ ODBDatabaseTest >> testIsChanged [
 ]
 
 { #category : #tests }
+ODBDatabaseTest >> testIsODBPersistent [
+
+	[ 
+	| collection |
+	collection := OrderedCollection newPersistent
+		add: 'string object';
+		yourself.
+		self assert: collection isODBPersistent.
+	 ] evaluateAndCommitIn: db newTransaction.
+	
+
+]
+
+{ #category : #tests }
 ODBDatabaseTest >> testIsPersistent [ 
 	| txn obj |
 	txn := db newTransaction.
