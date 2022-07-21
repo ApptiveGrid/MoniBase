@@ -43,7 +43,7 @@ Object >> isODBExpired [
 { #category : #'*omnibase' }
 Object >> isODBPersistent [
 
-	^ self currentTransaction isPersistent: self
+	^ OmniBase currentTransaction isPersistent: self
 ]
 
 { #category : #'*omnibase' }
