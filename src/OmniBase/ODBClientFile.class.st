@@ -50,6 +50,7 @@ OmniBase 1.0, David Gorisek (c) 1998
 { #category : #'public/create/open/close' }
 ODBClientFile >> openOn: aFileReference [
 	"Open client file. Signal an error if failed."
+	aFileReference exists ifFalse: [ Error signal: 'file does not exist' ].
 	stream := self 
 		newCodecStreamOn: aFileReference  
 		using: [ :s | s shareModeRead ].
