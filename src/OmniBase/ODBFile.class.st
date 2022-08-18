@@ -45,6 +45,7 @@ ODBFile >> compareHeader [
 
 { #category : #'create/open/close' }
 ODBFile >> createOn: aFileReference [
+	self fileShouldNotExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference 
 		using: [ :s | s truncate: 0 ].
@@ -118,7 +119,7 @@ ODBFile >> newCodecStreamOn: aFileReference using: aBlock [
 
 { #category : #'create/open/close' }
 ODBFile >> openExclusivelyOn: aFileReference [
-
+	self fileShouldExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference  
 		using: [ :s | s shareModeExclusive ].

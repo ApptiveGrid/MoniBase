@@ -22,7 +22,7 @@ ODBTransactionFile >> collectLockClassIDsFrom: rootClass to: aDictionary [
 
 { #category : #'public/create/open/close' }
 ODBTransactionFile >> createOn: aFileReference [
-
+	self fileShouldNotExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference 
 		using: [ :s | 
@@ -106,7 +106,7 @@ ODBTransactionFile >> locks [
 { #category : #'public/create/open/close' }
 ODBTransactionFile >> openOn: aFileReference [
 	"Open transaction file. Signal an error if failed."
-	
+	self fileShouldExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference  
 		using: [ :s | s shareModeRead ].
