@@ -68,6 +68,18 @@ OmniBase 1.0, David Gorisek (c) 1998
 '
 ]
 
+{ #category : #'public/create/open/close' }
+ODBFile >> fileShouldExist: aFileReference [
+	aFileReference exists 
+		ifFalse: [ Error signal: aFileReference asString,' does not exist' ]
+]
+
+{ #category : #'public/create/open/close' }
+ODBFile >> fileShouldNotExist: aFileReference [
+	aFileReference exists 
+		ifTrue: [ Error signal: aFileReference asString,' does already exist' ]
+]
+
 { #category : #finalization }
 ODBFile >> finalize [
 

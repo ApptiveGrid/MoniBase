@@ -48,18 +48,6 @@ OmniBase 1.0, David Gorisek (c) 1998
 ]
 
 { #category : #'public/create/open/close' }
-ODBClientFile >> fileShouldExist: aFileReference [
-	aFileReference exists 
-		ifFalse: [ Error signal: aFileReference asString,' does not exist' ]
-]
-
-{ #category : #'public/create/open/close' }
-ODBClientFile >> fileShouldNotExist: aFileReference [
-	aFileReference exists 
-		ifTrue: [ Error signal: aFileReference asString,' does already exist' ]
-]
-
-{ #category : #'public/create/open/close' }
 ODBClientFile >> openOn: aFileReference [
 	"Open client file. Signal an error if failed."
 	self fileShouldExist: aFileReference.
