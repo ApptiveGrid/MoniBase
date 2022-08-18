@@ -140,7 +140,7 @@ ODBFile >> openExclusivelyOn: aFileReference [
 
 { #category : #'create/open/close' }
 ODBFile >> openOn: aFileReference [
-
+	self fileShouldExist: aFileReference.
 	stream := self newCodecStreamOn: aFileReference.
 	^ self compareHeader
 ]
