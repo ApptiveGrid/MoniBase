@@ -10,6 +10,7 @@ Class {
 { #category : #public }
 ODBGarbageCollectorFile >> createOn: aFileReference [ 
 	"Create garbage collector file. Answer <nil> if failed."
+	self fileShouldNotExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference 
 		using: [ :s | 
@@ -52,7 +53,7 @@ ODBGarbageCollectorFile >> newObjectSpace: anInteger [
 { #category : #public }
 ODBGarbageCollectorFile >> openOn: aFileReference [ 
 	"Open garbage collector file. Signal an error if failed."
-	
+	self fileShouldExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference  
 		using: [ :s | s shareModeRead ].

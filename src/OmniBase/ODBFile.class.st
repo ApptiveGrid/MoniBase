@@ -45,6 +45,7 @@ ODBFile >> compareHeader [
 
 { #category : #'create/open/close' }
 ODBFile >> createOn: aFileReference [
+	self fileShouldNotExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference 
 		using: [ :s | s truncate: 0 ].
@@ -65,6 +66,18 @@ ODBFile >> descriptionString [
 OmniBase 1.0, David Gorisek (c) 1998
 
 '
+]
+
+{ #category : #'public/create/open/close' }
+ODBFile >> fileShouldExist: aFileReference [
+	aFileReference exists 
+		ifFalse: [ Error signal: aFileReference asString,' does not exist' ]
+]
+
+{ #category : #'public/create/open/close' }
+ODBFile >> fileShouldNotExist: aFileReference [
+	aFileReference exists 
+		ifTrue: [ Error signal: aFileReference asString,' does already exist' ]
 ]
 
 { #category : #finalization }
@@ -118,7 +131,7 @@ ODBFile >> newCodecStreamOn: aFileReference using: aBlock [
 
 { #category : #'create/open/close' }
 ODBFile >> openExclusivelyOn: aFileReference [
-
+	self fileShouldExist: aFileReference.
 	stream := self 
 		newCodecStreamOn: aFileReference  
 		using: [ :s | s shareModeExclusive ].
@@ -127,7 +140,7 @@ ODBFile >> openExclusivelyOn: aFileReference [
 
 { #category : #'create/open/close' }
 ODBFile >> openOn: aFileReference [
-
+	self fileShouldExist: aFileReference.
 	stream := self newCodecStreamOn: aFileReference.
 	^ self compareHeader
 ]
