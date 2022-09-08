@@ -35,6 +35,12 @@ ODBIntegerSet >> close [
 	^ super close
 ]
 
+{ #category : #public }
+ODBIntegerSet >> createOn: aFileReference [
+	aFileReference deleteIfAbsent: [ ].
+	^ super createOn: aFileReference 
+]
+
 { #category : #accessing }
 ODBIntegerSet >> includes: anInteger [
 
