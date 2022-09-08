@@ -28,6 +28,15 @@ ODBClientFile >> clientDescription: aString [
 		len: 128
 ]
 
+{ #category : #public }
+ODBClientFile >> createOn: aFileReference [
+	"client files can lay around so we delete it so everything
+	looks as expected"
+	aFileReference ensureDeleteFile.
+	^ super createOn: aFileReference 
+	
+]
+
 { #category : #'private/unclassified' }
 ODBClientFile >> created [
                 "Private - Put default values into file."
