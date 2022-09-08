@@ -32,7 +32,7 @@ ODBClientFile >> clientDescription: aString [
 ODBClientFile >> createOn: aFileReference [
 	"client files can lay around so we delete it so everything
 	looks as expected"
-	aFileReference ensureDeleteFile.
+	aFileReference deleteIfAbsent: [].
 	^ super createOn: aFileReference 
 	
 ]
