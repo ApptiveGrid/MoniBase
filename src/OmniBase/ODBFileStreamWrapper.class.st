@@ -167,15 +167,21 @@ ODBFileStreamWrapper >> initialize [
 	mutex := Semaphore forMutualExclusion
 ]
 
-{ #category : #public }
-ODBFileStreamWrapper >> lockAt: position length: length [ 
-
-	^ stream lockAt: position length: length
-]
-
 { #category : #accessing }
 ODBFileStreamWrapper >> name [
 	^ stream name
+]
+
+{ #category : #public }
+ODBFileStreamWrapper >> odbLockAt: position length: length [ 
+
+	^ stream odbLockAt: position length: length
+]
+
+{ #category : #accessing }
+ODBFileStreamWrapper >> odbUnlockAt: position length: length [
+
+	^ stream odbUnlockAt: position length: length
 ]
 
 { #category : #accessing }
@@ -249,10 +255,4 @@ ODBFileStreamWrapper >> truncate: anInteger [
 { #category : #locking }
 ODBFileStreamWrapper >> unlock [
 	stream unlock
-]
-
-{ #category : #accessing }
-ODBFileStreamWrapper >> unlockAt: position length: length [
-
-	^ stream unlockAt: position length: length
 ]

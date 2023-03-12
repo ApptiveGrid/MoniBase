@@ -39,7 +39,7 @@ ODBVersionControlFile >> getNewVersionNumberFor: clientID [
 		atPosition: self headerLength putLong: versionNumber;
 		atPosition: clientID * 4 + self headerLength putLong: versionNumber;
 		flush.
-	self unlockAt: self headerLength length: 4.
+	self odbUnlockAt: self headerLength length: 4.
 	^versionNumber
 ]
 

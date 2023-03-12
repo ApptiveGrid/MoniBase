@@ -79,12 +79,6 @@ ODBEncodingStream >> getBytesFor: aByteCollection len: len [
 	^ stream getBytesFor: aByteCollection len: len
 ]
 
-{ #category : #accessing }
-ODBEncodingStream >> lockAt: position length: length [ 
-
-	^ stream lockAt: position length: length
-]
-
 { #category : #reading }
 ODBEncodingStream >> nextArray: aClass [
 	| array |
@@ -534,9 +528,21 @@ ODBEncodingStream >> nextnCharacterStringSize: size [
     ^ readerWriter register: buf asString
 ]
 
+{ #category : #accessing }
+ODBEncodingStream >> odbLockAt: position length: length [ 
+
+	^ stream odbLockAt: position length: length
+]
+
 { #category : #reading }
 ODBEncodingStream >> odbNextObject [
 	^ (TypeCodeMapping at: stream getByte) odbDeserialize: readerWriter 
+]
+
+{ #category : #accessing }
+ODBEncodingStream >> odbUnlockAt: position length: length [
+
+	^ stream odbUnlockAt: position length: length
 ]
 
 { #category : #accessing }
@@ -577,10 +583,4 @@ ODBEncodingStream >> truncate: anInteger [
 	Position to anInteger."
 
 	stream truncate: anInteger
-]
-
-{ #category : #accessing }
-ODBEncodingStream >> unlockAt: position length: length [
-
-	^ stream unlockAt: position length: length
 ]

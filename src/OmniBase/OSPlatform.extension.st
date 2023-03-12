@@ -1,7 +1,7 @@
 Extension { #name : #OSPlatform }
 
 { #category : #'*OmniBase' }
-OSPlatform >> flockClass [ 
+OSPlatform >> odbFlockClass [ 
 	Error signal: 'no support for file locking on this platform'
 ]
 

@@ -35,7 +35,7 @@ ODBClientTable >> clientTableAt: index lockAndPut: value [
 
 	self waitForLockAt: self headerLength + index length: 1.
 	[self clientTableAt: index put: value] 
-		ensure: [self unlockAt: self headerLength + index length: 1]
+		ensure: [self odbUnlockAt: self headerLength + index length: 1]
 ]
 
 { #category : #private }
@@ -190,5 +190,5 @@ ODBClientTable >> setGlobalLockFor: clientID [
 ODBClientTable >> unlockTable [
                 "Private - Unlock client table."
 
-	self unlockAt: self headerLength length: table size
+	self odbUnlockAt: self headerLength length: table size
 ]

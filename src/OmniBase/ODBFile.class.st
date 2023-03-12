@@ -129,6 +129,13 @@ ODBFile >> newCodecStreamOn: aFileReference using: aBlock [
 	^ fileStream asODBPrimitiveEncodingStream.
 ]
 
+{ #category : #locking }
+ODBFile >> odbUnlockAt: pos length: length [
+	"Unlock file at pos."
+
+    ^stream odbUnlockAt: pos length: length
+]
+
 { #category : #'create/open/close' }
 ODBFile >> openExclusivelyOn: aFileReference [
 	self fileShouldExist: aFileReference.
@@ -192,14 +199,7 @@ ODBFile >> timeOutLength [
 ODBFile >> unlockAdding [
 	"Unlock file for writing at the end of file."
 
-    ^stream unlockAt: 0 length: 1
-]
-
-{ #category : #locking }
-ODBFile >> unlockAt: pos length: length [
-	"Unlock file at pos."
-
-    ^stream unlockAt: pos length: length
+    ^stream odbUnlockAt: 0 length: 1
 ]
 
 { #category : #public }
@@ -225,12 +225,12 @@ ODBFile >> waitForLockAt: pos length: length [
 ODBFile >> waitForLockAt: pos length: length whileWaitingDo: aBlock [
 
 	| startTime currentTime |
-	(stream lockAt: pos length: length) ifTrue: [ ^ self ].
+	(stream odbLockAt: pos length: length) ifTrue: [ ^ self ].
 
  	"If getting a lock is not successfull, we retry for #timeOutLength seconds"
 
  	startTime := Time totalSeconds.
- 	[ stream lockAt: pos length: length ] whileFalse: [ 
+ 	[ stream odbLockAt: pos length: length ] whileFalse: [ 
  		aBlock value.
  		currentTime := Time totalSeconds.
  		currentTime - startTime < self timeOutLength ifFalse: [ 

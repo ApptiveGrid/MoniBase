@@ -178,7 +178,7 @@ ODBObjectIndexFile >> newObjectFileID [
 	
 	[newID := (stream atPositionGetLong: self headerLength) + 1.
 	stream atPosition: self headerLength putLong: newID] 
-			ensure: [self unlockAt: self headerLength length: 4].
+			ensure: [self odbUnlockAt: self headerLength length: 4].
 	^newID
 ]
 
@@ -225,5 +225,5 @@ ODBObjectIndexFile >> swappedObjectSpaces: aBoolean [
 ODBObjectIndexFile >> unlock: index [ 
 	"Unlock  <value> at index."
 
-	self unlockAt: (index - 1) * valueLength + start length: valueLength
+	self odbUnlockAt: (index - 1) * valueLength + start length: valueLength
 ]
