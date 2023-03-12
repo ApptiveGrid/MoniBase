@@ -6,20 +6,29 @@ BinaryFileStream >> asODBPrimitiveEncodingStream [
 ]
 
 { #category : #'*OmniBase' }
-BinaryFileStream >> fileHandle [
+BinaryFileStream >> odbFileHandle [
 
 	^ handle pointerAt: 9
 ]
 
 { #category : #'*OmniBase' }
-BinaryFileStream >> flockClass [ 
-	^ OSPlatform current flockClass
+BinaryFileStream >> odbFlockClass [ 
+	^ OSPlatform current odbFlockClass
 ]
 
 { #category : #'*OmniBase' }
-BinaryFileStream >> lockAt: position length: length [
-	^ self flockClass
-		lock: self fileHandle
+BinaryFileStream >> odbLockAt: position length: length [
+	^ self odbFlockClass
+		lock: self odbFileHandle
+		from: position 
+		to: position + length - 1
+]
+
+{ #category : #'*OmniBase' }
+BinaryFileStream >> odbUnlockAt: position length: length [
+
+	^ self odbFlockClass  
+		unlock: self odbFileHandle
 		from: position 
 		to: position + length - 1
 ]
@@ -39,8 +48,8 @@ BinaryFileStream >> setShareMode: shareMode [
 	See the class comment for more information on what's going on here."
 
 	shareMode ifNotNil: [
-		(self flockClass
-			lock: self fileHandle
+		(self odbFlockClass
+			lock: self odbFileHandle
 				from: self shareModeFlagLocation
 				to: self shareModeFlagLocation
 				exclusive: shareMode)
@@ -66,19 +75,10 @@ BinaryFileStream >> shareModeRead [
 
 { #category : #'*OmniBase' }
 BinaryFileStream >> unlock [
-	^ self flockClass 
-		unlock: self fileHandle 
+	^ self odbFlockClass 
+		unlock: self odbFileHandle 
 		from: 0 
 		to: self size.
-]
-
-{ #category : #'*OmniBase' }
-BinaryFileStream >> unlockAt: position length: length [
-
-	^ self flockClass  
-		unlock: self fileHandle
-		from: position 
-		to: position + length - 1
 ]
 
 { #category : #'*OmniBase' }

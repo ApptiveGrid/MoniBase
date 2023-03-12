@@ -68,7 +68,7 @@ ODBContainerInfoFile >> lock [
 				position: pos;
 				putByte: 1.
 			^true]] 
-			ensure: [self unlockAt: pos length: 1]
+			ensure: [self odbUnlockAt: pos length: 1]
 ]
 
 { #category : #'private/initialization' }
@@ -90,5 +90,5 @@ ODBContainerInfoFile >> unlock [
 				position: pos;
 				putByte: 0.
 			^true]] 
-			ensure: [self unlockAt: pos length: 1]
+			ensure: [self odbUnlockAt: pos length: 1]
 ]

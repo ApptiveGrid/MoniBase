@@ -1,6 +1,6 @@
 Extension { #name : #UnixPlatform }
 
 { #category : #'*OmniBase' }
-UnixPlatform >> flockClass [
+UnixPlatform >> odbFlockClass [
 	^ FLock
 ]

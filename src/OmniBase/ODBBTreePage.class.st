@@ -452,7 +452,7 @@ ODBBTreePage >> storeItemLocked [
 	iterator waitForLockAt: pagePosition + offset length: valueLength + 2.
 	iterator stream atPosition: pagePosition + offset
 		putBytesFrom: (contents copyFrom: 1 + offset to: offset + valueLength + 2).
-	iterator unlockAt: pagePosition + offset length: valueLength + 2
+	iterator odbUnlockAt: pagePosition + offset length: valueLength + 2
 ]
 
 { #category : #public }
@@ -469,7 +469,7 @@ ODBBTreePage >> storeLocked [
 		atPosition: pagePosition
 		putBytesFrom: contents
 		len: length.
-	iterator unlockAt: pagePosition length: length
+	iterator odbUnlockAt: pagePosition length: length
 ]
 
 { #category : #'public/unclassified' }

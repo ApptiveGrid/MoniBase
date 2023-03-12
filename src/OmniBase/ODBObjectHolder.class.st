@@ -105,7 +105,7 @@ ODBObjectHolder >> lockWith: lockID [
 	[(indexFile
 		lock: objectID index;
 		at: objectID index) = contents 
-		ifTrue: [^indexFile stream lockAt: self lockStartPosition + objectID index length: 1].
+		ifTrue: [^indexFile stream odbLockAt: self lockStartPosition + objectID index length: 1].
 	oldVersion := true] 
 			ensure: [container indexFile unlock: objectID index].
 	^false
@@ -247,7 +247,7 @@ ODBObjectHolder >> storeBytes: aByteArray [
 { #category : #public }
 ODBObjectHolder >> unlockWith: lockID [ 
 	oldVersion ifTrue: [^false].
-	^container indexFile stream unlockAt: self lockStartPosition + objectID index length: 1
+	^container indexFile stream odbUnlockAt: self lockStartPosition + objectID index length: 1
 ]
 
 { #category : #accessing }

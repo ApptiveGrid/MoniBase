@@ -548,7 +548,7 @@ ODBBTreeIterator >> updateSizeAt: versionNumber oldHolders: oldHolders deltaSize
 		dictionarySize: oldHolder dictionarySize + deltaSize;
 		versionNumber: versionNumber.
 	newHolder storeOnStream: stream at: pos ] ensure: [ 
-		self unlockAt: pos length: ODBSizeHolder sizeInBytes ]
+		self odbUnlockAt: pos length: ODBSizeHolder sizeInBytes ]
 ]
 
 { #category : #public }
