@@ -103,8 +103,9 @@ ODBTransactionObject >> objectStored [
 { #category : #printing }
 ODBTransactionObject >> printOn: aStream [ 
 	super printOn: aStream.
-	aStream << ' '.
-	holder objectID printOn: aStream
+	holder ifNotNil: [  
+		aStream << ' '.
+		holder objectID printOn: aStream ]
 ]
 
 { #category : #initialization }
