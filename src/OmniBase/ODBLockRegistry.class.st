@@ -64,7 +64,7 @@ ODBLockRegistry class >> removePath: aString [
 
 { #category : #'class initialization' }
 ODBLockRegistry class >> reset [ 
-	registries := Dictionary new
+	registries := WeakValueDictionary new
 ]
 
 { #category : #adding }
@@ -165,8 +165,7 @@ ODBLockRegistry >> removeLock: anODBObjectLock [
 		Transcript crShow: 'registry locks: ', locks asString.
 		locks 
 			removeKey: anODBObjectLock lockRegistryKey 
-			ifAbsent: nil ].
-	self checkRemoval
+			ifAbsent: nil ]
 ]
 
 { #category : #initialization }
