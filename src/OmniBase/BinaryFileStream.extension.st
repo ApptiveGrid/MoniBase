@@ -21,7 +21,7 @@ BinaryFileStream >> odbLockAt: position length: length [
 	^ self odbFlockClass
 		lock: self odbFileHandle
 		from: position 
-		to: position + length - 1
+		to: length
 ]
 
 { #category : #'*OmniBase' }
@@ -30,7 +30,7 @@ BinaryFileStream >> odbUnlockAt: position length: length [
 	^ self odbFlockClass  
 		unlock: self odbFileHandle
 		from: position 
-		to: position + length - 1
+		to: length
 ]
 
 { #category : #'*OmniBase' }

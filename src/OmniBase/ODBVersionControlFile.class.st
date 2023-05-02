@@ -2,7 +2,6 @@ Class {
 	#name : #ODBVersionControlFile,
 	#superclass : #ODBFile,
 	#instVars : [
-		'lastReadTime',
 		'versionDescriptor'
 	],
 	#category : #'OmniBase-Files'
@@ -57,19 +56,13 @@ ODBVersionControlFile >> removeCommittingFor: clientID [
 ODBVersionControlFile >> versionDescriptor [
 	"Answer read versionDescriptor."
 
-	| versionTable size time |
-	(versionDescriptor isNil or: [ 
-		 ((time := Time millisecondClockValue) - lastReadTime) abs > 500 ]) 
-		ifTrue: [ 
-			size := ODBClientTable maxClients + 1 * 4.
-			versionTable := ByteArray new: size.
-			stream
-				atPosition: self headerLength
-				getBytesFor: versionTable
-				len: size.
-			lastReadTime := time
-				                ifNil: [ Time millisecondClockValue ]
-				                ifNotNil: [ time ].
-			versionDescriptor := ODBVersionDescriptor new fromVersionTable: versionTable ].
+	| versionTable size |
+	size := ODBClientTable maxClients + 1 * 4.
+	versionTable := ByteArray new: size.
+	stream
+		atPosition: self headerLength
+		getBytesFor: versionTable
+		len: size.
+	versionDescriptor := ODBVersionDescriptor new fromVersionTable: versionTable.
 	^ versionDescriptor
 ]

@@ -64,11 +64,13 @@ ODBLockRegistry class >> removePath: aString [
 
 { #category : #'class initialization' }
 ODBLockRegistry class >> reset [ 
-	registries := Dictionary new
+	registries := WeakValueDictionary new
 ]
 
 { #category : #adding }
 ODBLockRegistry >> addLock: aKeyLock [ 
+	Transcript crShow: 'registry locks: ', locks asString.
+	Transcript crShow: 'registry: ', path asString, ' , adding lock ', aKeyLock lockRegistryKey.
 	^ self 
 		lockAt: aKeyLock lockRegistryKey 
 		put: aKeyLock
@@ -148,12 +150,22 @@ ODBLockRegistry >> remove [
 ]
 
 { #category : #removing }
+ODBLockRegistry >> removeAllLocksFor: anODBLocalTransaction [ 
+	locks ifNotEmpty: [ 
+		locks copy do: [ :each | 
+			(each transaction = anODBLocalTransaction) ifTrue: [ 
+				Transcript show: ('removing stale lock ', each asString); cr.
+				locks remove: each  ] ] ]
+]
+
+{ #category : #removing }
 ODBLockRegistry >> removeLock: anODBObjectLock [ 
 	mutex critical: [
+		Transcript crShow: 'registry: ', path asString, ' , remove lock for ', anODBObjectLock lockRegistryKey.
+		Transcript crShow: 'registry locks: ', locks asString.
 		locks 
 			removeKey: anODBObjectLock lockRegistryKey 
-			ifAbsent: nil ].
-	self checkRemoval
+			ifAbsent: nil ]
 ]
 
 { #category : #initialization }

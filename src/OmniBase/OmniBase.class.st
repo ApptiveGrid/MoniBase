@@ -297,7 +297,6 @@ OmniBase >> close [
 			transactionManager := nil].
 	lockRegistry 
 		ifNotNil: [ 
-			lockRegistry checkRemoval.
 			lockRegistry := nil ].
 	self class remove: self
 ]
