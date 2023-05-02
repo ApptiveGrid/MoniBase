@@ -2,7 +2,6 @@ Class {
 	#name : #ODBVersionControlFile,
 	#superclass : #ODBFile,
 	#instVars : [
-		'lastReadTime',
 		'versionDescriptor'
 	],
 	#category : #'OmniBase-Files'
