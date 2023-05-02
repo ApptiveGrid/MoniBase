@@ -69,7 +69,8 @@ ODBLockRegistry class >> reset [
 
 { #category : #adding }
 ODBLockRegistry >> addLock: aKeyLock [ 
-	Transcript crShow: 'adding lock ', aKeyLock lockRegistryKey.
+	Transcript crShow: 'registry locks: ', locks asString.
+	Transcript crShow: 'registry: ', path asString, ' , adding lock ', aKeyLock lockRegistryKey.
 	^ self 
 		lockAt: aKeyLock lockRegistryKey 
 		put: aKeyLock
@@ -160,7 +161,8 @@ ODBLockRegistry >> removeAllLocksFor: anODBLocalTransaction [
 { #category : #removing }
 ODBLockRegistry >> removeLock: anODBObjectLock [ 
 	mutex critical: [
-		Transcript crShow: 'remove lock for ', anODBObjectLock lockRegistryKey.
+		Transcript crShow: 'registry: ', path asString, ' , remove lock for ', anODBObjectLock lockRegistryKey.
+		Transcript crShow: 'registry locks: ', locks asString.
 		locks 
 			removeKey: anODBObjectLock lockRegistryKey 
 			ifAbsent: nil ].
